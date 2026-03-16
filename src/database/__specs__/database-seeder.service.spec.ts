@@ -75,7 +75,8 @@ describe('DatabaseSeederService', () => {
       userRepoMock.create.mockReturnValue(mockUser);
       userRepoMock.save.mockResolvedValue(mockUser);
       noteRepoMock.create.mockImplementation((data) => buildNoteMock(data as Partial<Note>));
-      noteRepoMock.save.mockResolvedValue([]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (noteRepoMock.save as jest.MockedFunction<any>).mockResolvedValue([]);
     });
 
     it('when onApplicationBootstrap is called, then exactly one user is created', async () => {

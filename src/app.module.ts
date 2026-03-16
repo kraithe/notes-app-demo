@@ -9,6 +9,7 @@ import { Note } from './notes/domain/entities/note.entity';
 import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { NotesModule } from './notes/notes.module';
 
 const THROTTLER_TTL_SECONDS = 60;
 const THROTTLER_LIMIT = 30;
@@ -42,6 +43,7 @@ const THROTTLER_LIMIT = 30;
     DatabaseModule,
     UsersModule,
     AuthModule,
+    NotesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

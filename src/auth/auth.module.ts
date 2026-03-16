@@ -4,9 +4,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { UsersModule } from '../users/users.module';
 import { TokenBlacklistService } from './domain/services/token-blacklist.service';
+import { AuthService } from './domain/services/auth.service';
 import { JwtStrategy } from './domain/strategies/jwt.strategy';
 import { JwtAuthGuard } from './domain/guards/jwt-auth.guard';
 import { transactionScriptRegistry } from './registries/transaction-script.registry';
+import { AuthController } from './application/controllers/auth.controller';
 
 @Module({
   imports: [
@@ -23,8 +25,10 @@ import { transactionScriptRegistry } from './registries/transaction-script.regis
     }),
     UsersModule,
   ],
+  controllers: [AuthController],
   providers: [
     TokenBlacklistService,
+    AuthService,
     JwtStrategy,
     JwtAuthGuard,
     ...transactionScriptRegistry.providers,
