@@ -1,12 +1,17 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { User } from './users/domain/entities/user.entity';
 import { Note } from './notes/domain/entities/note.entity';
 import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
+
+const THROTTLER_TTL_SECONDS = 60;
+const THROTTLER_LIMIT = 30;
 
 @Module({
   imports: [
@@ -28,8 +33,15 @@ import { UsersModule } from './users/users.module';
       }),
       inject: [ConfigService],
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: THROTTLER_TTL_SECONDS * 1000,
+        limit: THROTTLER_LIMIT,
+      },
+    ]),
     DatabaseModule,
     UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
