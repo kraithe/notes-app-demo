@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { User } from './users/domain/entities/user.entity';
 import { Note } from './notes/domain/entities/note.entity';
 import { DatabaseModule } from './database/database.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { DatabaseModule } from './database/database.module';
       inject: [ConfigService],
     }),
     DatabaseModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
