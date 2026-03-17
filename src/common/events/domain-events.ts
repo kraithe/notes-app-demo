@@ -27,4 +27,3 @@ export type LlmEvent = {
 };
 
 export type DomainEvent = ApiEvent | LlmEvent;
-

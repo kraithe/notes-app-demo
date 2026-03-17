@@ -24,4 +24,3 @@ export class DomainEventBus {
     this.logger.log(JSON.stringify(event));
   }
 }
-

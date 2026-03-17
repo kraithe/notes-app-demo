@@ -7,4 +7,3 @@ import { DomainEventBus } from './domain-event-bus.service';
   exports: [DomainEventBus],
 })
 export class EventsModule {}
-

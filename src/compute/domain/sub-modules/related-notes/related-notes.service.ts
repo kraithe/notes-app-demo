@@ -90,8 +90,7 @@ export class RelatedNotesService {
             noteId: note.id,
             userId,
             errorName: err instanceof Error ? err.name : 'UnknownError',
-            errorMessage:
-              err instanceof Error ? err.message : String(err),
+            errorMessage: err instanceof Error ? err.message : String(err),
           });
           throw err;
         }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
 import { Logger } from '@nestjs/common';
 import { ComputeService, type NoteComputeContext } from '../compute.service';
 import { RelatedNotesService } from '../../sub-modules/related-notes/related-notes.service';
@@ -11,7 +12,9 @@ describe('ComputeService', () => {
   let suggestedWebContentServiceMock: jest.Mocked<SuggestedWebContentService>;
   let loggerErrorSpy: jest.SpyInstance;
 
-  const buildContext = (overrides: Partial<NoteComputeContext> = {}): NoteComputeContext => ({
+  const buildContext = (
+    overrides: Partial<NoteComputeContext> = {},
+  ): NoteComputeContext => ({
     noteId: 1 as NoteId,
     userId: 10 as UserId,
     title: 'Title',
@@ -115,9 +118,9 @@ describe('ComputeService', () => {
       expect(
         relatedNotesServiceMock.removeEmbeddingForNote,
       ).toHaveBeenCalledWith(noteId, userId);
-      expect(
-        suggestedWebContentServiceMock.deleteForNote,
-      ).toHaveBeenCalledWith(noteId);
+      expect(suggestedWebContentServiceMock.deleteForNote).toHaveBeenCalledWith(
+        noteId,
+      );
     });
 
     it('given related notes cleanup fails, when invoked, then the error is logged and web content cleanup still runs', async () => {
@@ -137,9 +140,9 @@ describe('ComputeService', () => {
         'RelatedNotes cleanup failed for deleted note 9',
         error,
       );
-      expect(
-        suggestedWebContentServiceMock.deleteForNote,
-      ).toHaveBeenCalledWith(noteId);
+      expect(suggestedWebContentServiceMock.deleteForNote).toHaveBeenCalledWith(
+        noteId,
+      );
     });
 
     it('given web content cleanup fails, when invoked, then the error is logged and related notes cleanup still runs', async () => {
@@ -147,9 +150,7 @@ describe('ComputeService', () => {
       const noteId = 11 as NoteId;
       const userId = 40 as UserId;
       const error = new Error('Web cleanup failed');
-      suggestedWebContentServiceMock.deleteForNote.mockRejectedValueOnce(
-        error,
-      );
+      suggestedWebContentServiceMock.deleteForNote.mockRejectedValueOnce(error);
 
       // Act
       await target.afterNoteDeleted(noteId, userId);
@@ -165,4 +166,3 @@ describe('ComputeService', () => {
     });
   });
 });
-
