@@ -18,6 +18,10 @@ export class NoteRepository {
     });
   }
 
+  async findById(noteId: NoteId): Promise<Note | null> {
+    return this.repo.findOneBy({ id: noteId });
+  }
+
   async findOneByIdAndUserId(noteId: NoteId, userId: UserId): Promise<Note | null> {
     return this.repo.findOneBy({ id: noteId, ownedByUserId: userId });
   }

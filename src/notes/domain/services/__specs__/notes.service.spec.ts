@@ -4,6 +4,7 @@ import { GetNoteTS } from '../../transaction-scripts/get-note-ts/get-note.transa
 import { CreateNoteTS } from '../../transaction-scripts/create-note-ts/create-note.transaction.script';
 import { UpdateNoteTS } from '../../transaction-scripts/update-note-ts/update-note.transaction.script';
 import { DeleteNoteTS } from '../../transaction-scripts/delete-note-ts/delete-note.transaction.script';
+import { ComputeService } from '../../../../compute/domain/services/compute.service';
 import { NoteSummaryResponseDto } from '../../../application/dtos/responses/note-summary.response.dto';
 import { NoteResponseDto } from '../../../application/dtos/responses/note.response.dto';
 import type { NoteId } from '../../entities/note.entity';
@@ -36,6 +37,7 @@ describe('NotesService', () => {
   let createNoteTSMock: jest.Mocked<CreateNoteTS>;
   let updateNoteTSMock: jest.Mocked<UpdateNoteTS>;
   let deleteNoteTSMock: jest.Mocked<DeleteNoteTS>;
+  let computeServiceMock: jest.Mocked<ComputeService>;
 
   beforeEach(() => {
     getAllNotesTSMock = { apply: jest.fn() } as unknown as jest.Mocked<GetAllNotesTS>;
@@ -43,6 +45,10 @@ describe('NotesService', () => {
     createNoteTSMock = { apply: jest.fn() } as unknown as jest.Mocked<CreateNoteTS>;
     updateNoteTSMock = { apply: jest.fn() } as unknown as jest.Mocked<UpdateNoteTS>;
     deleteNoteTSMock = { apply: jest.fn() } as unknown as jest.Mocked<DeleteNoteTS>;
+    computeServiceMock = {
+      afterNoteUpsert: jest.fn().mockResolvedValue(undefined),
+      afterNoteDeleted: jest.fn().mockResolvedValue(undefined),
+    } as unknown as jest.Mocked<ComputeService>;
 
     target = new NotesService(
       getAllNotesTSMock,
@@ -50,6 +56,7 @@ describe('NotesService', () => {
       createNoteTSMock,
       updateNoteTSMock,
       deleteNoteTSMock,
+      computeServiceMock,
     );
   });
 

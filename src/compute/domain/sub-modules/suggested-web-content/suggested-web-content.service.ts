@@ -1,0 +1,63 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { generateObject } from 'ai';
+import { openai } from '@ai-sdk/openai';
+import { z } from 'zod';
+import { SuggestedWebContentRecordRepository } from '../../../infrastructure/repositories/suggested-web-content-record.repository';
+import type { NoteId } from '../../../../notes/domain/entities/note.entity';
+
+const CHAT_MODEL = 'gpt-4o-mini';
+const MAX_SUGGESTIONS = 3;
+
+const WebContentSuggestionSchema = z.object({
+  suggestions: z
+    .array(
+      z.object({
+        url: z.string().url(),
+        title: z.string().min(1),
+      }),
+    )
+    .max(MAX_SUGGESTIONS),
+});
+
+type WebContentSuggestion = z.infer<typeof WebContentSuggestionSchema>['suggestions'][number];
+
+@Injectable()
+export class SuggestedWebContentService {
+  private readonly logger = new Logger(SuggestedWebContentService.name);
+
+  constructor(
+    private readonly suggestedWebContentRecordRepository: SuggestedWebContentRecordRepository,
+  ) {}
+
+  async recomputeForNote(noteId: NoteId, title: string, content: string): Promise<void> {
+    const suggestions = await this.fetchWebContentSuggestions(title, content);
+    await this.suggestedWebContentRecordRepository.replaceForNote(
+      noteId,
+      suggestions.map((s) => ({ webContentUrl: s.url, webContentTitle: s.title })),
+    );
+  }
+
+  async deleteForNote(noteId: NoteId): Promise<void> {
+    await this.suggestedWebContentRecordRepository.deleteByPrimaryNoteId(noteId);
+  }
+
+  private async fetchWebContentSuggestions(
+    title: string,
+    content: string,
+  ): Promise<WebContentSuggestion[]> {
+    const notePreview = content.slice(0, 500);
+    const { object } = await generateObject({
+      model: openai(CHAT_MODEL),
+      schema: WebContentSuggestionSchema,
+      prompt: `You are a research assistant. Based on the following note, suggest up to ${MAX_SUGGESTIONS} relevant web resources a reader might find useful. Include a mix of types such as articles, blog posts, YouTube videos, or documentation pages. Do not suggest websites known primarily for explicit content. Return only real, publicly accessible URLs with accurate titles.
+
+Note title: ${title}
+
+Note content (preview):
+${notePreview}
+
+Return an array of up to ${MAX_SUGGESTIONS} objects, each with a "url" and "title" field.`,
+    });
+    return object.suggestions;
+  }
+}

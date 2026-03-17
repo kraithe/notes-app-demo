@@ -6,10 +6,15 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { User } from './users/domain/entities/user.entity';
 import { Note } from './notes/domain/entities/note.entity';
+import { RelatedNotesRecord } from './compute/domain/entities/related-notes-record.entity';
+import { SuggestedWebContentRecord } from './compute/domain/entities/suggested-web-content-record.entity';
+import { NoteEmbedding } from './compute/domain/entities/note-embedding.entity';
 import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { NotesModule } from './notes/notes.module';
+import { ComputeModule } from './compute/compute.module';
+import type { DataSource } from 'typeorm';
 
 const THROTTLER_TTL_SECONDS = 60;
 const THROTTLER_LIMIT = 30;
@@ -29,9 +34,18 @@ const THROTTLER_LIMIT = 30;
           'notes_password',
         ),
         database: configService.get<string>('POSTGRES_DB', 'notes_db'),
-        entities: [User, Note],
+        entities: [User, Note, RelatedNotesRecord, SuggestedWebContentRecord, NoteEmbedding],
         synchronize: true,
+        installExtensions: true,
+        extra: { max: 10 },
       }),
+      dataSourceFactory: async (options) => {
+        const { DataSource } = await import('typeorm');
+        const dataSource = new DataSource(options!);
+        await dataSource.initialize();
+        await dataSource.query('CREATE EXTENSION IF NOT EXISTS vector');
+        return dataSource;
+      },
       inject: [ConfigService],
     }),
     ThrottlerModule.forRoot([
@@ -44,6 +58,7 @@ const THROTTLER_LIMIT = 30;
     UsersModule,
     AuthModule,
     NotesModule,
+    ComputeModule,
   ],
   controllers: [AppController],
   providers: [AppService],
