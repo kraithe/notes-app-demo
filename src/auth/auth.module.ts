@@ -18,7 +18,13 @@ import { AuthController } from './application/controllers/auth.controller';
       useFactory: (configService: ConfigService) => ({
         secret: configService.getOrThrow<string>('JWT_SECRET'),
         signOptions: {
-          expiresIn: configService.get<number>('JWT_EXPIRY_SECONDS', 7200),
+          // jsonwebtoken treats a string expiresIn as a "ms" timespan; e.g. "7200" => 7.2s.
+          // We want seconds, so coerce to a number.
+          expiresIn: (() => {
+            const raw = configService.get<string>('JWT_EXPIRY_SECONDS', '7200');
+            const seconds = Number(raw);
+            return Number.isFinite(seconds) && seconds > 0 ? seconds : 7200;
+          })(),
         },
       }),
       inject: [ConfigService],
