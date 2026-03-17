@@ -43,7 +43,7 @@ From a technical perspective, a larger / scaled version might do well to include
 
 ```bash
 
-# Running locally requires npm, Docker, and Docker Compose
+# Running locally requires npm, postgres, Docker, and Docker Compose
 
 # backend packages
 $ npm install
