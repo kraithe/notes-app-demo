@@ -16,6 +16,9 @@ const USERNAME_MAX = 20;
 const PASSWORD_MIN = 8;
 const PASSWORD_MAX = 20;
 
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
+
 function validateUsername(username: string): string | null {
   if (!username) return "Username is required.";
   if (username.length < USERNAME_MIN)
@@ -84,7 +87,7 @@ export default function RegisterPage() {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch("http://localhost:3000/auth/register", {
+      const res = await fetch(`${API_BASE}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password: password.value }),
