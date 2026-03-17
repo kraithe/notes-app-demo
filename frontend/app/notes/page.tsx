@@ -357,7 +357,7 @@ export default function NotesPage() {
                           Save a note to see related notes.
                         </p>
                       ) : isLoadingCompute ? (
-                        <p className="text-sm text-zinc-500">Computing…</p>
+                        <p className="text-sm text-zinc-500">Loading insights…</p>
                       ) : relatedNotes.length === 0 ? (
                         <p className="text-sm text-zinc-500">
                           No related notes yet.
@@ -390,7 +390,7 @@ export default function NotesPage() {
                           Save a note to see suggestions.
                         </p>
                       ) : isLoadingCompute ? (
-                        <p className="text-sm text-zinc-500">Computing…</p>
+                        <p className="text-sm text-zinc-500">Loading insights…</p>
                       ) : suggestedWebContent.length === 0 ? (
                         <p className="text-sm text-zinc-500">
                           No suggestions yet.
@@ -407,7 +407,12 @@ export default function NotesPage() {
                               >
                                 {s.title}
                               </a>
-                              <div className="text-xs text-zinc-500 break-all">
+                              {s.reason && (
+                                <div className="text-xs text-zinc-400">
+                                  {s.reason}
+                                </div>
+                              )}
+                              <div className="text-[11px] text-zinc-500 break-all">
                                 {s.url}
                               </div>
                             </li>

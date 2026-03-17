@@ -17,7 +17,11 @@ export class SuggestedWebContentRecordRepository {
 
   async replaceForNote(
     primaryNoteId: NoteId,
-    suggestions: Array<{ webContentUrl: string; webContentTitle: string }>,
+    suggestions: Array<{
+      webContentUrl: string;
+      webContentTitle: string;
+      webContentReason: string | null;
+    }>,
   ): Promise<void> {
     await this.deleteByPrimaryNoteId(primaryNoteId);
     if (suggestions.length === 0) {
@@ -29,14 +33,23 @@ export class SuggestedWebContentRecordRepository {
         primaryNoteId,
         webContentUrl: item.webContentUrl,
         webContentTitle: item.webContentTitle,
+        webContentReason: item.webContentReason,
       }),
     );
     await this.repo.save(records);
   }
 
   private deduplicateByUrl(
-    items: Array<{ webContentUrl: string; webContentTitle: string }>,
-  ): Array<{ webContentUrl: string; webContentTitle: string }> {
+    items: Array<{
+      webContentUrl: string;
+      webContentTitle: string;
+      webContentReason: string | null;
+    }>,
+  ): Array<{
+    webContentUrl: string;
+    webContentTitle: string;
+    webContentReason: string | null;
+  }> {
     const seen = new Set<string>();
     return items.filter((item) => {
       if (seen.has(item.webContentUrl)) {

@@ -15,6 +15,7 @@ const WebContentSuggestionSchema = z.object({
     z.object({
       url: z.string().url(),
       title: z.string().min(1),
+      reason: z.string().min(1).max(120),
     }),
   ),
 });
@@ -52,6 +53,7 @@ export class SuggestedWebContentService {
       suggestions.map((s) => ({
         webContentUrl: s.url,
         webContentTitle: s.title,
+        webContentReason: s.reason,
       })),
     );
     this.lastSuggestedAtByNoteId.set(noteId as unknown as number, now);
@@ -96,7 +98,9 @@ Note title: ${title}
 Note content (preview):
 ${notePreview}
 
-Return an array of **no more than ${MAX_SUGGESTIONS}** objects, each with a "url" and "title" field.`,
+For each suggestion, also include a very short "reason" (5–12 words) that explains why this particular resource is relevant to the note.
+
+Return an array of **no more than ${MAX_SUGGESTIONS}** objects, each with "url", "title", and "reason" fields.`,
       });
       this.eventBus.emitLlm({
         kind: 'web-content',

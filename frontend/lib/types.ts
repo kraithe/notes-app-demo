@@ -22,6 +22,7 @@ export type RelatedNote = {
 export type SuggestedWebContent = {
   url: string;
   title: string;
+  reason: string | null;
 };
 
 export type GetAllNotesResponse = {

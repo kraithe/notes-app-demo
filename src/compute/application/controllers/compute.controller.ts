@@ -71,6 +71,7 @@ export class ComputeController {
       const dto = new SuggestedWebContentResponseDto();
       dto.url = r.webContentUrl;
       dto.title = r.webContentTitle;
+      dto.reason = r.webContentReason;
       return dto;
     });
   }

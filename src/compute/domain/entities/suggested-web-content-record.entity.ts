@@ -18,4 +18,12 @@ export class SuggestedWebContentRecord {
 
   @Column({ name: 'web_content_title', type: 'varchar', length: 500 })
   webContentTitle!: string;
+
+  @Column({
+    name: 'web_content_reason',
+    type: 'varchar',
+    length: 500,
+    nullable: true,
+  })
+  webContentReason!: string | null;
 }

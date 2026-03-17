@@ -9,6 +9,7 @@ import { DomainEventBus } from '../../../../common/events/domain-event-bus.servi
 // UserId is used in method signatures but not in the buildNoteTitleMap helper
 
 const MAX_RELATED = 5;
+const MIN_SIMILARITY = 0.10;
 
 @Injectable()
 export class RelatedNotesService {
@@ -58,7 +59,8 @@ export class RelatedNotesService {
             title: d.title,
             score: jaccard(doc.tokens, d.tokens),
           }))
-          .filter((x) => x.score > 0)
+          // Require a minimum similarity so results feel meaningfully related.
+          .filter((x) => x.score >= MIN_SIMILARITY)
           .sort((a, b) => b.score - a.score)
           .slice(0, MAX_RELATED);
 

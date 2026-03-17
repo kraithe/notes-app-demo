@@ -6,4 +6,7 @@ export class SuggestedWebContentResponseDto {
 
   @ApiProperty()
   title!: string;
+
+  @ApiProperty({ required: false })
+  reason!: string | null;
 }
