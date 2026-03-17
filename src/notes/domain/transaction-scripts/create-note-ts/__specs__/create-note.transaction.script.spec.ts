@@ -31,11 +31,19 @@ describe('CreateNoteTS', () => {
       const inputUserId = 10 as UserId;
       const inputTitle = 'My Note';
       const inputContent = 'Note content here';
-      const mockNote = buildNoteMock({ ownedByUserId: inputUserId, title: inputTitle, content: inputContent });
+      const mockNote = buildNoteMock({
+        ownedByUserId: inputUserId,
+        title: inputTitle,
+        content: inputContent,
+      });
       noteRepositoryMock.createNote.mockResolvedValue(mockNote);
 
       // Act
-      const actualResult = await target.apply({ userId: inputUserId, title: inputTitle, content: inputContent });
+      const actualResult = await target.apply({
+        userId: inputUserId,
+        title: inputTitle,
+        content: inputContent,
+      });
 
       // Assert
       expect(actualResult.id).toBe(mockNote.id);
@@ -53,10 +61,20 @@ describe('CreateNoteTS', () => {
       noteRepositoryMock.createNote.mockResolvedValue(buildNoteMock());
 
       // Act
-      await target.apply({ userId: inputUserId, title: inputTitle, content: inputContent });
+      await target.apply({
+        userId: inputUserId,
+        title: inputTitle,
+        content: inputContent,
+      });
 
       // Assert
-      expect(noteRepositoryMock.createNote).toHaveBeenNthCalledWith(1, inputUserId, inputTitle, inputContent);
+      const createNoteSpy = jest.mocked(noteRepositoryMock.createNote);
+      expect(createNoteSpy).toHaveBeenNthCalledWith(
+        1,
+        inputUserId,
+        inputTitle,
+        inputContent,
+      );
     });
 
     it('when apply is called, then createNote is called exactly once', async () => {
@@ -67,7 +85,8 @@ describe('CreateNoteTS', () => {
       await target.apply({ userId: 10 as UserId, title: 'T', content: 'C' });
 
       // Assert
-      expect(noteRepositoryMock.createNote).toHaveBeenCalledTimes(1);
+      const createNoteSpy = jest.mocked(noteRepositoryMock.createNote);
+      expect(createNoteSpy).toHaveBeenCalledTimes(1);
     });
   });
 });

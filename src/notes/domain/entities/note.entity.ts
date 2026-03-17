@@ -1,4 +1,9 @@
-import { Column, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import type { UserId } from '../../../users/domain/entities/user.entity';
 
 export type NoteId = number & { readonly __brand: 'NoteId' };

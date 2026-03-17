@@ -50,7 +50,10 @@ export class ComputeService {
     try {
       await this.relatedNotesService.recomputeForUser(noteId, userId);
     } catch (err) {
-      this.logger.error(`RelatedNotes recompute failed for note ${noteId}`, err);
+      this.logger.error(
+        `RelatedNotes recompute failed for note ${noteId}`,
+        err,
+      );
     }
   }
 
@@ -62,15 +65,24 @@ export class ComputeService {
         context.content,
       );
     } catch (err) {
-      this.logger.error(`WebContent recompute failed for note ${context.noteId}`, err);
+      this.logger.error(
+        `WebContent recompute failed for note ${context.noteId}`,
+        err,
+      );
     }
   }
 
-  private async runRelatedNotesAfterDelete(noteId: NoteId, userId: UserId): Promise<void> {
+  private async runRelatedNotesAfterDelete(
+    noteId: NoteId,
+    userId: UserId,
+  ): Promise<void> {
     try {
       await this.relatedNotesService.removeEmbeddingForNote(noteId, userId);
     } catch (err) {
-      this.logger.error(`RelatedNotes cleanup failed for deleted note ${noteId}`, err);
+      this.logger.error(
+        `RelatedNotes cleanup failed for deleted note ${noteId}`,
+        err,
+      );
     }
   }
 
@@ -78,7 +90,10 @@ export class ComputeService {
     try {
       await this.suggestedWebContentService.deleteForNote(noteId);
     } catch (err) {
-      this.logger.error(`WebContent cleanup failed for deleted note ${noteId}`, err);
+      this.logger.error(
+        `WebContent cleanup failed for deleted note ${noteId}`,
+        err,
+      );
     }
   }
 }

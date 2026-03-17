@@ -5,7 +5,9 @@ import { SignInDto } from '../../dtos/requests/sign-in.dto';
 import type { AuthenticatedUser } from '../../../domain/strategies/jwt.strategy';
 import type { UserId } from '../../../../users/domain/entities/user.entity';
 
-const buildAuthUserMock = (overrides: Partial<AuthenticatedUser> = {}): AuthenticatedUser => ({
+const buildAuthUserMock = (
+  overrides: Partial<AuthenticatedUser> = {},
+): AuthenticatedUser => ({
   userId: 10 as UserId,
   username: 'testuser',
   jti: 'test-jti-uuid',
@@ -13,8 +15,10 @@ const buildAuthUserMock = (overrides: Partial<AuthenticatedUser> = {}): Authenti
   ...overrides,
 });
 
-const buildRequestMock = (user: AuthenticatedUser): Request & { user: AuthenticatedUser } =>
-  ({ user } as Request & { user: AuthenticatedUser });
+const buildRequestMock = (
+  user: AuthenticatedUser,
+): Request & { user: AuthenticatedUser } =>
+  ({ user }) as Request & { user: AuthenticatedUser };
 
 describe('AuthController', () => {
   let target: AuthController;
@@ -33,40 +37,56 @@ describe('AuthController', () => {
   describe('register', () => {
     it('when called, then it delegates to AuthService with the correct username and password', async () => {
       // Arrange
-      const inputDto: RegisterUserDto = { username: 'newuser', password: 'securepass' };
+      const inputDto: RegisterUserDto = {
+        username: 'newuser',
+        password: 'securepass',
+      };
       authServiceMock.register.mockResolvedValue(undefined);
 
       // Act
       await target.register(inputDto);
 
       // Assert
-      expect(authServiceMock.register).toHaveBeenNthCalledWith(1, 'newuser', 'securepass');
+      const registerSpy = jest.mocked(authServiceMock.register);
+      expect(registerSpy).toHaveBeenNthCalledWith(1, 'newuser', 'securepass');
     });
 
     it('when called, then AuthService.register is called exactly once', async () => {
       // Arrange
-      const inputDto: RegisterUserDto = { username: 'newuser', password: 'securepass' };
+      const inputDto: RegisterUserDto = {
+        username: 'newuser',
+        password: 'securepass',
+      };
       authServiceMock.register.mockResolvedValue(undefined);
 
       // Act
       await target.register(inputDto);
 
       // Assert
-      expect(authServiceMock.register).toHaveBeenCalledTimes(1);
+      const registerSpy = jest.mocked(authServiceMock.register);
+      expect(registerSpy).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('signIn', () => {
     it('when called, then it delegates to AuthService with the correct credentials', async () => {
       // Arrange
-      const inputDto: SignInDto = { username: 'existinguser', password: 'mypassword' };
+      const inputDto: SignInDto = {
+        username: 'existinguser',
+        password: 'mypassword',
+      };
       authServiceMock.signIn.mockResolvedValue({ accessToken: 'token' });
 
       // Act
       await target.signIn(inputDto);
 
       // Assert
-      expect(authServiceMock.signIn).toHaveBeenNthCalledWith(1, 'existinguser', 'mypassword');
+      const signInSpy = jest.mocked(authServiceMock.signIn);
+      expect(signInSpy).toHaveBeenNthCalledWith(
+        1,
+        'existinguser',
+        'mypassword',
+      );
     });
 
     it('when called, then it returns the access token from AuthService', async () => {
@@ -86,14 +106,22 @@ describe('AuthController', () => {
   describe('signOut', () => {
     it('when called, then it delegates to AuthService with the jti and exp from the request user', () => {
       // Arrange
-      const inputUser = buildAuthUserMock({ jti: 'specific-jti', exp: 1_700_000_000 });
+      const inputUser = buildAuthUserMock({
+        jti: 'specific-jti',
+        exp: 1_700_000_000,
+      });
       const inputReq = buildRequestMock(inputUser);
 
       // Act
       target.signOut(inputReq);
 
       // Assert
-      expect(authServiceMock.signOut).toHaveBeenNthCalledWith(1, 'specific-jti', 1_700_000_000);
+      const signOutSpy = jest.mocked(authServiceMock.signOut);
+      expect(signOutSpy).toHaveBeenNthCalledWith(
+        1,
+        'specific-jti',
+        1_700_000_000,
+      );
     });
 
     it('when called, then AuthService.signOut is called exactly once', () => {
@@ -104,7 +132,8 @@ describe('AuthController', () => {
       target.signOut(inputReq);
 
       // Assert
-      expect(authServiceMock.signOut).toHaveBeenCalledTimes(1);
+      const signOutSpy = jest.mocked(authServiceMock.signOut);
+      expect(signOutSpy).toHaveBeenCalledTimes(1);
     });
   });
 });

@@ -10,7 +10,9 @@ describe('AuthService', () => {
   let signOutTSMock: jest.Mocked<SignOutTS>;
 
   beforeEach(() => {
-    registerUserTSMock = { apply: jest.fn() } as unknown as jest.Mocked<RegisterUserTS>;
+    registerUserTSMock = {
+      apply: jest.fn(),
+    } as unknown as jest.Mocked<RegisterUserTS>;
     signInTSMock = { apply: jest.fn() } as unknown as jest.Mocked<SignInTS>;
     signOutTSMock = { apply: jest.fn() } as unknown as jest.Mocked<SignOutTS>;
 
@@ -28,7 +30,8 @@ describe('AuthService', () => {
       await target.register(inputUsername, inputPassword);
 
       // Assert
-      expect(registerUserTSMock.apply).toHaveBeenNthCalledWith(1, {
+      const registerApplySpy = jest.mocked(registerUserTSMock.apply);
+      expect(registerApplySpy).toHaveBeenNthCalledWith(1, {
         username: inputUsername,
         password: inputPassword,
       });
@@ -42,7 +45,8 @@ describe('AuthService', () => {
       await target.register('user', 'pass1234');
 
       // Assert
-      expect(registerUserTSMock.apply).toHaveBeenCalledTimes(1);
+      const registerApplySpy = jest.mocked(registerUserTSMock.apply);
+      expect(registerApplySpy).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -58,7 +62,8 @@ describe('AuthService', () => {
       await target.signIn(inputUsername, inputPassword);
 
       // Assert
-      expect(signInTSMock.apply).toHaveBeenNthCalledWith(1, {
+      const signInApplySpy = jest.mocked(signInTSMock.apply);
+      expect(signInApplySpy).toHaveBeenNthCalledWith(1, {
         username: inputUsername,
         password: inputPassword,
       });
@@ -87,7 +92,11 @@ describe('AuthService', () => {
       target.signOut(inputJti, inputExp);
 
       // Assert
-      expect(signOutTSMock.apply).toHaveBeenNthCalledWith(1, { jti: inputJti, exp: inputExp });
+      const signOutApplySpy = jest.mocked(signOutTSMock.apply);
+      expect(signOutApplySpy).toHaveBeenNthCalledWith(1, {
+        jti: inputJti,
+        exp: inputExp,
+      });
     });
 
     it('when called, then SignOutTS is called exactly once', () => {
@@ -95,7 +104,8 @@ describe('AuthService', () => {
       target.signOut('jti', 1_700_000_000);
 
       // Assert
-      expect(signOutTSMock.apply).toHaveBeenCalledTimes(1);
+      const signOutApplySpy = jest.mocked(signOutTSMock.apply);
+      expect(signOutApplySpy).toHaveBeenCalledTimes(1);
     });
   });
 });

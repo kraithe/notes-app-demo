@@ -22,11 +22,18 @@ export class NoteRepository {
     return this.repo.findOneBy({ id: noteId });
   }
 
-  async findOneByIdAndUserId(noteId: NoteId, userId: UserId): Promise<Note | null> {
+  async findOneByIdAndUserId(
+    noteId: NoteId,
+    userId: UserId,
+  ): Promise<Note | null> {
     return this.repo.findOneBy({ id: noteId, ownedByUserId: userId });
   }
 
-  async createNote(userId: UserId, title: string, content: string): Promise<Note> {
+  async createNote(
+    userId: UserId,
+    title: string,
+    content: string,
+  ): Promise<Note> {
     const note = this.repo.create({ ownedByUserId: userId, title, content });
     return this.repo.save(note);
   }

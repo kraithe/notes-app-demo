@@ -5,6 +5,12 @@ import { UpdateNoteTS } from '../domain/transaction-scripts/update-note-ts/updat
 import { DeleteNoteTS } from '../domain/transaction-scripts/delete-note-ts/delete-note.transaction.script';
 
 export const transactionScriptRegistry = {
-  providers: [GetAllNotesTS, GetNoteTS, CreateNoteTS, UpdateNoteTS, DeleteNoteTS],
+  providers: [
+    GetAllNotesTS,
+    GetNoteTS,
+    CreateNoteTS,
+    UpdateNoteTS,
+    DeleteNoteTS,
+  ],
   exports: [GetAllNotesTS, GetNoteTS, CreateNoteTS, UpdateNoteTS, DeleteNoteTS],
 };

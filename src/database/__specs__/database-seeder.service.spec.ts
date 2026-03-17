@@ -6,7 +6,12 @@ import { User, UserId } from '../../users/domain/entities/user.entity';
 import { Note, NoteId } from '../../notes/domain/entities/note.entity';
 
 const buildUserMock = (overrides: Partial<User> = {}): User =>
-  ({ id: 1 as UserId, name: 'DemoUser', password: '$2b$10$hashed', ...overrides }) as User;
+  ({
+    id: 1 as UserId,
+    name: 'DemoUser',
+    password: '$2b$10$hashed',
+    ...overrides,
+  }) as User;
 
 const buildNoteMock = (overrides: Partial<Note> = {}): Note =>
   ({
@@ -53,7 +58,8 @@ describe('DatabaseSeederService', () => {
       await target.onApplicationBootstrap();
 
       // Assert
-      expect(userRepoMock.save).not.toHaveBeenCalled();
+      const userSaveSpy = jest.mocked(userRepoMock.save);
+      expect(userSaveSpy).not.toHaveBeenCalled();
     });
 
     it('when onApplicationBootstrap is called, then no notes are created', async () => {
@@ -64,7 +70,8 @@ describe('DatabaseSeederService', () => {
       await target.onApplicationBootstrap();
 
       // Assert
-      expect(noteRepoMock.save).not.toHaveBeenCalled();
+      const noteSaveSpy = jest.mocked(noteRepoMock.save);
+      expect(noteSaveSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -74,9 +81,11 @@ describe('DatabaseSeederService', () => {
       userRepoMock.count.mockResolvedValue(0);
       userRepoMock.create.mockReturnValue(mockUser);
       userRepoMock.save.mockResolvedValue(mockUser);
-      noteRepoMock.create.mockImplementation((data) => buildNoteMock(data as Partial<Note>));
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (noteRepoMock.save as jest.MockedFunction<any>).mockResolvedValue([]);
+      noteRepoMock.create.mockImplementation((data) =>
+        buildNoteMock(data as Partial<Note>),
+      );
+
+      jest.mocked(noteRepoMock.save).mockResolvedValue([] as never);
     });
 
     it('when onApplicationBootstrap is called, then exactly one user is created', async () => {
@@ -84,7 +93,8 @@ describe('DatabaseSeederService', () => {
       await target.onApplicationBootstrap();
 
       // Assert
-      expect(userRepoMock.save).toHaveBeenCalledTimes(1);
+      const userSaveSpy = jest.mocked(userRepoMock.save);
+      expect(userSaveSpy).toHaveBeenCalledTimes(1);
     });
 
     it('when onApplicationBootstrap is called, then exactly three notes are saved', async () => {
@@ -99,11 +109,15 @@ describe('DatabaseSeederService', () => {
     it('when onApplicationBootstrap is called, then the user password is stored as a bcrypt hash', async () => {
       // Act
       await target.onApplicationBootstrap();
-      const createdUserArg = userRepoMock.create.mock.calls[0][0] as Partial<User>;
+      const createdUserArg = userRepoMock.create.mock
+        .calls[0][0] as Partial<User>;
 
       // Assert
       expect(createdUserArg.password).toBeDefined();
-      const isValidHash = await bcrypt.compare('!falsyTruthy789', createdUserArg.password!);
+      const isValidHash = await bcrypt.compare(
+        '!falsyTruthy789',
+        createdUserArg.password!,
+      );
       expect(isValidHash).toBe(true);
     });
 

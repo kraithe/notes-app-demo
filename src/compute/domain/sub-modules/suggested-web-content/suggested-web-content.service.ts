@@ -19,7 +19,9 @@ const WebContentSuggestionSchema = z.object({
     .max(MAX_SUGGESTIONS),
 });
 
-type WebContentSuggestion = z.infer<typeof WebContentSuggestionSchema>['suggestions'][number];
+type WebContentSuggestion = z.infer<
+  typeof WebContentSuggestionSchema
+>['suggestions'][number];
 
 @Injectable()
 export class SuggestedWebContentService {
@@ -29,16 +31,25 @@ export class SuggestedWebContentService {
     private readonly suggestedWebContentRecordRepository: SuggestedWebContentRecordRepository,
   ) {}
 
-  async recomputeForNote(noteId: NoteId, title: string, content: string): Promise<void> {
+  async recomputeForNote(
+    noteId: NoteId,
+    title: string,
+    content: string,
+  ): Promise<void> {
     const suggestions = await this.fetchWebContentSuggestions(title, content);
     await this.suggestedWebContentRecordRepository.replaceForNote(
       noteId,
-      suggestions.map((s) => ({ webContentUrl: s.url, webContentTitle: s.title })),
+      suggestions.map((s) => ({
+        webContentUrl: s.url,
+        webContentTitle: s.title,
+      })),
     );
   }
 
   async deleteForNote(noteId: NoteId): Promise<void> {
-    await this.suggestedWebContentRecordRepository.deleteByPrimaryNoteId(noteId);
+    await this.suggestedWebContentRecordRepository.deleteByPrimaryNoteId(
+      noteId,
+    );
   }
 
   private async fetchWebContentSuggestions(

@@ -53,13 +53,16 @@ describe('NoteSummaryResponseDto.truncate', () => {
 
     it('when truncate is called, then only the first 30 characters of content are preserved', () => {
       // Arrange
-      const inputValue = 'Hello World, this is a long string that goes well beyond thirty chars';
+      const inputValue =
+        'Hello World, this is a long string that goes well beyond thirty chars';
 
       // Act
       const actualResult = NoteSummaryResponseDto.truncate(inputValue);
 
       // Assert
-      expect(actualResult.startsWith('Hello World, this is a long st')).toBe(true);
+      expect(actualResult.startsWith('Hello World, this is a long st')).toBe(
+        true,
+      );
     });
   });
 

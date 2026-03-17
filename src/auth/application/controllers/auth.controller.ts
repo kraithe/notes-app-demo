@@ -14,7 +14,10 @@ import { JwtAuthGuard } from '../../domain/guards/jwt-auth.guard';
 import { RegisterUserDto } from '../../../users/application/dtos/requests/register-user.dto';
 import { SignInDto } from '../dtos/requests/sign-in.dto';
 import { RegisterSwagger } from './actions/register/register.swagger';
-import { SignInSwagger, SignInResponseDto } from './actions/sign-in/sign-in.swagger';
+import {
+  SignInSwagger,
+  SignInResponseDto,
+} from './actions/sign-in/sign-in.swagger';
 import { SignOutSwagger } from './actions/sign-out/sign-out.swagger';
 import type { AuthenticatedUser } from '../../domain/strategies/jwt.strategy';
 

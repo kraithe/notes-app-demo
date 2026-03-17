@@ -29,11 +29,17 @@ describe('GetNoteTS', () => {
   describe('given a note that belongs to the user', () => {
     it('when apply is called, then it returns the full note data', async () => {
       // Arrange
-      const inputNote = buildNoteMock({ id: 5 as NoteId, ownedByUserId: 10 as UserId });
+      const inputNote = buildNoteMock({
+        id: 5 as NoteId,
+        ownedByUserId: 10 as UserId,
+      });
       noteRepositoryMock.findOneByIdAndUserId.mockResolvedValue(inputNote);
 
       // Act
-      const actualResult = await target.apply({ noteId: 5 as NoteId, userId: 10 as UserId });
+      const actualResult = await target.apply({
+        noteId: 5 as NoteId,
+        userId: 10 as UserId,
+      });
 
       // Assert
       expect(actualResult.id).toBe(5);
@@ -76,6 +82,7 @@ describe('GetNoteTS', () => {
     await target.apply({ noteId: inputNoteId, userId: inputUserId });
 
     // Assert
-    expect(noteRepositoryMock.findOneByIdAndUserId).toHaveBeenNthCalledWith(1, inputNoteId, inputUserId);
+    const findOneSpy = jest.mocked(noteRepositoryMock.findOneByIdAndUserId);
+    expect(findOneSpy).toHaveBeenNthCalledWith(1, inputNoteId, inputUserId);
   });
 });

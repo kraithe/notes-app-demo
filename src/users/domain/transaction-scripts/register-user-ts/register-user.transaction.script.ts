@@ -12,7 +12,10 @@ export class RegisterUserTS {
 
   async apply(param: RegisterUserParam): Promise<void> {
     await this.assertUsernameIsAvailable(param.username);
-    const hashedPassword = await bcrypt.hash(param.password, BCRYPT_SALT_ROUNDS);
+    const hashedPassword = await bcrypt.hash(
+      param.password,
+      BCRYPT_SALT_ROUNDS,
+    );
     await this.userRepository.createUser(param.username, hashedPassword);
   }
 

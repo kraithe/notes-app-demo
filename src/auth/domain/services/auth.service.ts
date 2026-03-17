@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { RegisterUserTS } from '../../../users/domain/transaction-scripts/register-user-ts/register-user.transaction.script';
-import { SignInTS, SignInResult } from '../transaction-scripts/sign-in-ts/sign-in.transaction.script';
+import {
+  SignInTS,
+  SignInResult,
+} from '../transaction-scripts/sign-in-ts/sign-in.transaction.script';
 import { SignOutTS } from '../transaction-scripts/sign-out-ts/sign-out.transaction.script';
 
 @Injectable()

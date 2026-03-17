@@ -31,28 +31,37 @@ describe('RegisterUserTS', () => {
       // Arrange
       const inputParam = { username: 'newuser', password: 'securePass1' };
       userRepositoryMock.findByUsername.mockResolvedValue(null);
-      userRepositoryMock.createUser.mockResolvedValue(buildUserMock({ name: 'newuser' }));
+      userRepositoryMock.createUser.mockResolvedValue(
+        buildUserMock({ name: 'newuser' }),
+      );
 
       // Act
       await target.apply(inputParam);
 
       // Assert
-      expect(userRepositoryMock.createUser).toHaveBeenCalledTimes(1);
+      const createUserSpy = jest.mocked(userRepositoryMock.createUser);
+      expect(createUserSpy).toHaveBeenCalledTimes(1);
     });
 
     it('when apply is called, then the password stored is a bcrypt hash, not the plain text', async () => {
       // Arrange
       const inputParam = { username: 'newuser', password: 'securePass1' };
       userRepositoryMock.findByUsername.mockResolvedValue(null);
-      userRepositoryMock.createUser.mockResolvedValue(buildUserMock({ name: 'newuser' }));
+      userRepositoryMock.createUser.mockResolvedValue(
+        buildUserMock({ name: 'newuser' }),
+      );
 
       // Act
       await target.apply(inputParam);
-      const actualStoredPassword = userRepositoryMock.createUser.mock.calls[0][1];
+      const actualStoredPassword =
+        userRepositoryMock.createUser.mock.calls[0][1];
 
       // Assert
       expect(actualStoredPassword).not.toBe(inputParam.password);
-      const isValidHash = await bcrypt.compare(inputParam.password, actualStoredPassword);
+      const isValidHash = await bcrypt.compare(
+        inputParam.password,
+        actualStoredPassword,
+      );
       expect(isValidHash).toBe(true);
     });
 
@@ -60,7 +69,9 @@ describe('RegisterUserTS', () => {
       // Arrange
       const inputParam = { username: 'newuser', password: 'securePass1' };
       userRepositoryMock.findByUsername.mockResolvedValue(null);
-      userRepositoryMock.createUser.mockResolvedValue(buildUserMock({ name: 'newuser' }));
+      userRepositoryMock.createUser.mockResolvedValue(
+        buildUserMock({ name: 'newuser' }),
+      );
 
       // Act
       await target.apply(inputParam);
@@ -91,7 +102,8 @@ describe('RegisterUserTS', () => {
       await expect(target.apply(inputParam)).rejects.toThrow();
 
       // Assert
-      expect(userRepositoryMock.createUser).not.toHaveBeenCalled();
+      const createUserSpy = jest.mocked(userRepositoryMock.createUser);
+      expect(createUserSpy).not.toHaveBeenCalled();
     });
 
     it('when apply is called, then the exception message includes the username', async () => {

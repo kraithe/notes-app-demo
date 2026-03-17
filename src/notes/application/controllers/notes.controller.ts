@@ -14,7 +14,9 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import sanitizeHtml = require('sanitize-html');
+import type sanitizeHtmlType from 'sanitize-html';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const sanitizeHtml = require('sanitize-html') as typeof sanitizeHtmlType;
 import { JwtAuthGuard } from '../../../auth/domain/guards/jwt-auth.guard';
 import { NotesService } from '../../domain/services/notes.service';
 import { CreateNoteDto } from '../dtos/requests/create-note.dto';
@@ -31,7 +33,10 @@ import type { NoteId } from '../../domain/entities/note.entity';
 
 type AuthenticatedRequest = Request & { user: AuthenticatedUser };
 
-const SANITIZE_OPTIONS: sanitizeHtml.IOptions = { allowedTags: [], allowedAttributes: {} };
+const SANITIZE_OPTIONS: sanitizeHtmlType.IOptions = {
+  allowedTags: [],
+  allowedAttributes: {},
+};
 
 @ApiTags('notes')
 @UseGuards(ThrottlerGuard, JwtAuthGuard)
@@ -41,7 +46,9 @@ export class NotesController {
 
   @Get()
   @GetAllNotesSwagger()
-  async getAllNotes(@Req() req: AuthenticatedRequest): Promise<GetAllNotesResponseDto> {
+  async getAllNotes(
+    @Req() req: AuthenticatedRequest,
+  ): Promise<GetAllNotesResponseDto> {
     return this.notesService.getAllNotes(req.user.userId);
   }
 
@@ -75,7 +82,12 @@ export class NotesController {
   ): Promise<NoteResponseDto> {
     const title = sanitizeHtml(dto.title, SANITIZE_OPTIONS);
     const content = sanitizeHtml(dto.content, SANITIZE_OPTIONS);
-    return this.notesService.updateNote(id as NoteId, req.user.userId, title, content);
+    return this.notesService.updateNote(
+      id as NoteId,
+      req.user.userId,
+      title,
+      content,
+    );
   }
 
   @Delete(':id')

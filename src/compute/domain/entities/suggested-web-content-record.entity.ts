@@ -1,7 +1,9 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import type { NoteId } from '../../../notes/domain/entities/note.entity';
 
-export type SuggestedWebContentRecordId = number & { readonly __brand: 'SuggestedWebContentRecordId' };
+export type SuggestedWebContentRecordId = number & {
+  readonly __brand: 'SuggestedWebContentRecordId';
+};
 
 @Entity('suggested_web_content_records')
 export class SuggestedWebContentRecord {

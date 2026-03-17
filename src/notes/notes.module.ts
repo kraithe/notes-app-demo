@@ -18,8 +18,6 @@ import { transactionScriptRegistry } from './registries/transaction-script.regis
     ...repositoryRegistry.providers,
     ...transactionScriptRegistry.providers,
   ],
-  exports: [
-    ...repositoryRegistry.exports,
-  ],
+  exports: [...repositoryRegistry.exports],
 })
 export class NotesModule {}

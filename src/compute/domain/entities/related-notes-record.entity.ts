@@ -1,7 +1,9 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import type { NoteId } from '../../../notes/domain/entities/note.entity';
 
-export type RelatedNotesRecordId = number & { readonly __brand: 'RelatedNotesRecordId' };
+export type RelatedNotesRecordId = number & {
+  readonly __brand: 'RelatedNotesRecordId';
+};
 
 @Entity('related_notes_records')
 export class RelatedNotesRecord {

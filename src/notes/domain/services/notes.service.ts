@@ -59,7 +59,12 @@ export class NotesService {
     title: string,
     content: string,
   ): Promise<NoteResponseDto> {
-    const note = await this.updateNoteTS.apply({ noteId, userId, title, content });
+    const note = await this.updateNoteTS.apply({
+      noteId,
+      userId,
+      title,
+      content,
+    });
     void this.computeService.afterNoteUpsert({
       noteId: note.id as NoteId,
       userId,

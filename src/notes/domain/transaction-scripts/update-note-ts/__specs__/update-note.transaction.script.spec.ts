@@ -33,7 +33,10 @@ describe('UpdateNoteTS', () => {
       const inputNote = buildNoteMock();
       const inputTitle = 'Updated Title';
       const inputContent = 'Updated content';
-      const mockUpdated = buildNoteMock({ title: inputTitle, content: inputContent });
+      const mockUpdated = buildNoteMock({
+        title: inputTitle,
+        content: inputContent,
+      });
 
       noteRepositoryMock.findOneByIdAndUserId.mockResolvedValue(inputNote);
       noteRepositoryMock.updateNote.mockResolvedValue(mockUpdated);
@@ -58,13 +61,26 @@ describe('UpdateNoteTS', () => {
       const inputContent = 'Updated content';
 
       noteRepositoryMock.findOneByIdAndUserId.mockResolvedValue(inputNote);
-      noteRepositoryMock.updateNote.mockResolvedValue(buildNoteMock({ title: inputTitle, content: inputContent }));
+      noteRepositoryMock.updateNote.mockResolvedValue(
+        buildNoteMock({ title: inputTitle, content: inputContent }),
+      );
 
       // Act
-      await target.apply({ noteId: 1 as NoteId, userId: 10 as UserId, title: inputTitle, content: inputContent });
+      await target.apply({
+        noteId: 1 as NoteId,
+        userId: 10 as UserId,
+        title: inputTitle,
+        content: inputContent,
+      });
 
       // Assert
-      expect(noteRepositoryMock.updateNote).toHaveBeenNthCalledWith(1, inputNote, inputTitle, inputContent);
+      const updateNoteSpy = jest.mocked(noteRepositoryMock.updateNote);
+      expect(updateNoteSpy).toHaveBeenNthCalledWith(
+        1,
+        inputNote,
+        inputTitle,
+        inputContent,
+      );
     });
   });
 
@@ -75,7 +91,12 @@ describe('UpdateNoteTS', () => {
 
       // Act & Assert
       await expect(
-        target.apply({ noteId: 99 as NoteId, userId: 10 as UserId, title: 'T', content: 'C' }),
+        target.apply({
+          noteId: 99 as NoteId,
+          userId: 10 as UserId,
+          title: 'T',
+          content: 'C',
+        }),
       ).rejects.toThrow(NoteNotFoundException);
     });
 
@@ -85,11 +106,17 @@ describe('UpdateNoteTS', () => {
 
       // Act
       await expect(
-        target.apply({ noteId: 99 as NoteId, userId: 10 as UserId, title: 'T', content: 'C' }),
+        target.apply({
+          noteId: 99 as NoteId,
+          userId: 10 as UserId,
+          title: 'T',
+          content: 'C',
+        }),
       ).rejects.toThrow();
 
       // Assert
-      expect(noteRepositoryMock.updateNote).not.toHaveBeenCalled();
+      const updateNoteSpy = jest.mocked(noteRepositoryMock.updateNote);
+      expect(updateNoteSpy).not.toHaveBeenCalled();
     });
   });
 });

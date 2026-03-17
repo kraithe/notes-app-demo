@@ -3,7 +3,10 @@ import * as bcrypt from 'bcrypt';
 import { UserRepository } from '../../../../../users/infrastructure/repositories/user.repository';
 import { InvalidCredentialsException } from '../../../exceptions/invalid-credentials.exception';
 import { SignInTS } from '../sign-in.transaction.script';
-import type { User, UserId } from '../../../../../users/domain/entities/user.entity';
+import type {
+  User,
+  UserId,
+} from '../../../../../users/domain/entities/user.entity';
 
 jest.mock('bcrypt');
 
@@ -63,7 +66,10 @@ describe('SignInTS', () => {
 
       // Act
       await target.apply(inputParam);
-      const signSpy = jwtServiceMock.sign.mock.calls[0][0] as Record<string, unknown>;
+      const signSpy = jwtServiceMock.sign.mock.calls[0][0] as Record<
+        string,
+        unknown
+      >;
 
       // Assert
       expect(signSpy.sub).toBe(42);
@@ -80,7 +86,9 @@ describe('SignInTS', () => {
       userRepositoryMock.findByUsername.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(target.apply(inputParam)).rejects.toThrow(InvalidCredentialsException);
+      await expect(target.apply(inputParam)).rejects.toThrow(
+        InvalidCredentialsException,
+      );
     });
   });
 
@@ -94,7 +102,9 @@ describe('SignInTS', () => {
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       // Act & Assert
-      await expect(target.apply(inputParam)).rejects.toThrow(InvalidCredentialsException);
+      await expect(target.apply(inputParam)).rejects.toThrow(
+        InvalidCredentialsException,
+      );
     });
   });
 });

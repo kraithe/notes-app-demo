@@ -10,7 +10,9 @@ import { NoteResponseDto } from '../../../application/dtos/responses/note.respon
 import type { NoteId } from '../../entities/note.entity';
 import type { UserId } from '../../../../users/domain/entities/user.entity';
 
-const buildSummaryMock = (overrides: Partial<NoteSummaryResponseDto> = {}): NoteSummaryResponseDto =>
+const buildSummaryMock = (
+  overrides: Partial<NoteSummaryResponseDto> = {},
+): NoteSummaryResponseDto =>
   Object.assign(new NoteSummaryResponseDto(), {
     id: 1,
     ownedByUserId: 10,
@@ -20,7 +22,9 @@ const buildSummaryMock = (overrides: Partial<NoteSummaryResponseDto> = {}): Note
     ...overrides,
   });
 
-const buildNoteDtoMock = (overrides: Partial<NoteResponseDto> = {}): NoteResponseDto =>
+const buildNoteDtoMock = (
+  overrides: Partial<NoteResponseDto> = {},
+): NoteResponseDto =>
   Object.assign(new NoteResponseDto(), {
     id: 1,
     ownedByUserId: 10,
@@ -40,11 +44,19 @@ describe('NotesService', () => {
   let computeServiceMock: jest.Mocked<ComputeService>;
 
   beforeEach(() => {
-    getAllNotesTSMock = { apply: jest.fn() } as unknown as jest.Mocked<GetAllNotesTS>;
+    getAllNotesTSMock = {
+      apply: jest.fn(),
+    } as unknown as jest.Mocked<GetAllNotesTS>;
     getNotesTSMock = { apply: jest.fn() } as unknown as jest.Mocked<GetNoteTS>;
-    createNoteTSMock = { apply: jest.fn() } as unknown as jest.Mocked<CreateNoteTS>;
-    updateNoteTSMock = { apply: jest.fn() } as unknown as jest.Mocked<UpdateNoteTS>;
-    deleteNoteTSMock = { apply: jest.fn() } as unknown as jest.Mocked<DeleteNoteTS>;
+    createNoteTSMock = {
+      apply: jest.fn(),
+    } as unknown as jest.Mocked<CreateNoteTS>;
+    updateNoteTSMock = {
+      apply: jest.fn(),
+    } as unknown as jest.Mocked<UpdateNoteTS>;
+    deleteNoteTSMock = {
+      apply: jest.fn(),
+    } as unknown as jest.Mocked<DeleteNoteTS>;
     computeServiceMock = {
       afterNoteUpsert: jest.fn().mockResolvedValue(undefined),
       afterNoteDeleted: jest.fn().mockResolvedValue(undefined),
@@ -65,7 +77,10 @@ describe('NotesService', () => {
       it('when called, then it also fetches the full most recent note', async () => {
         // Arrange
         const inputUserId = 10 as UserId;
-        const inputSummaries = [buildSummaryMock({ id: 3 }), buildSummaryMock({ id: 1 })];
+        const inputSummaries = [
+          buildSummaryMock({ id: 3 }),
+          buildSummaryMock({ id: 1 }),
+        ];
         const inputMostRecent = buildNoteDtoMock({ id: 3 });
 
         getAllNotesTSMock.apply.mockResolvedValue(inputSummaries);
@@ -81,7 +96,10 @@ describe('NotesService', () => {
       it('when called, then GetNoteTS is called with the first summary id (most recent)', async () => {
         // Arrange
         const inputUserId = 10 as UserId;
-        const inputSummaries = [buildSummaryMock({ id: 7 }), buildSummaryMock({ id: 2 })];
+        const inputSummaries = [
+          buildSummaryMock({ id: 7 }),
+          buildSummaryMock({ id: 2 }),
+        ];
 
         getAllNotesTSMock.apply.mockResolvedValue(inputSummaries);
         getNotesTSMock.apply.mockResolvedValue(buildNoteDtoMock());
@@ -90,7 +108,8 @@ describe('NotesService', () => {
         await target.getAllNotes(inputUserId);
 
         // Assert
-        expect(getNotesTSMock.apply).toHaveBeenNthCalledWith(1, {
+        const getNotesApplySpy = jest.mocked(getNotesTSMock.apply);
+        expect(getNotesApplySpy).toHaveBeenNthCalledWith(1, {
           noteId: 7,
           userId: inputUserId,
         });
@@ -98,7 +117,10 @@ describe('NotesService', () => {
 
       it('when called, then it returns the note summaries array', async () => {
         // Arrange
-        const inputSummaries = [buildSummaryMock(), buildSummaryMock({ id: 2 })];
+        const inputSummaries = [
+          buildSummaryMock(),
+          buildSummaryMock({ id: 2 }),
+        ];
         getAllNotesTSMock.apply.mockResolvedValue(inputSummaries);
         getNotesTSMock.apply.mockResolvedValue(buildNoteDtoMock());
 
@@ -131,7 +153,8 @@ describe('NotesService', () => {
         await target.getAllNotes(10 as UserId);
 
         // Assert
-        expect(getNotesTSMock.apply).not.toHaveBeenCalled();
+        const getNotesApplySpy = jest.mocked(getNotesTSMock.apply);
+        expect(getNotesApplySpy).not.toHaveBeenCalled();
       });
     });
   });
@@ -147,7 +170,11 @@ describe('NotesService', () => {
       await target.getNote(inputNoteId, inputUserId);
 
       // Assert
-      expect(getNotesTSMock.apply).toHaveBeenNthCalledWith(1, { noteId: inputNoteId, userId: inputUserId });
+      const getNotesApplySpy = jest.mocked(getNotesTSMock.apply);
+      expect(getNotesApplySpy).toHaveBeenNthCalledWith(1, {
+        noteId: inputNoteId,
+        userId: inputUserId,
+      });
     });
   });
 
@@ -163,7 +190,8 @@ describe('NotesService', () => {
       await target.createNote(inputUserId, inputTitle, inputContent);
 
       // Assert
-      expect(createNoteTSMock.apply).toHaveBeenNthCalledWith(1, {
+      const createApplySpy = jest.mocked(createNoteTSMock.apply);
+      expect(createApplySpy).toHaveBeenNthCalledWith(1, {
         userId: inputUserId,
         title: inputTitle,
         content: inputContent,
@@ -181,10 +209,16 @@ describe('NotesService', () => {
       updateNoteTSMock.apply.mockResolvedValue(buildNoteDtoMock());
 
       // Act
-      await target.updateNote(inputNoteId, inputUserId, inputTitle, inputContent);
+      await target.updateNote(
+        inputNoteId,
+        inputUserId,
+        inputTitle,
+        inputContent,
+      );
 
       // Assert
-      expect(updateNoteTSMock.apply).toHaveBeenNthCalledWith(1, {
+      const updateApplySpy = jest.mocked(updateNoteTSMock.apply);
+      expect(updateApplySpy).toHaveBeenNthCalledWith(1, {
         noteId: inputNoteId,
         userId: inputUserId,
         title: inputTitle,
@@ -204,7 +238,11 @@ describe('NotesService', () => {
       await target.deleteNote(inputNoteId, inputUserId);
 
       // Assert
-      expect(deleteNoteTSMock.apply).toHaveBeenNthCalledWith(1, { noteId: inputNoteId, userId: inputUserId });
+      const deleteApplySpy = jest.mocked(deleteNoteTSMock.apply);
+      expect(deleteApplySpy).toHaveBeenNthCalledWith(1, {
+        noteId: inputNoteId,
+        userId: inputUserId,
+      });
     });
   });
 });

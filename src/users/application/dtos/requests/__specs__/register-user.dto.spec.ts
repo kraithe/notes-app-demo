@@ -2,7 +2,9 @@ import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 import { RegisterUserDto } from '../register-user.dto';
 
-const buildValidDto = (overrides: Partial<RegisterUserDto> = {}): RegisterUserDto =>
+const buildValidDto = (
+  overrides: Partial<RegisterUserDto> = {},
+): RegisterUserDto =>
   plainToInstance(RegisterUserDto, {
     username: 'validuser',
     password: 'validpass',
@@ -51,7 +53,9 @@ describe('RegisterUserDto', () => {
         const actualMessages = await getMessagesFor(inputDto);
 
         // Assert
-        expect(actualMessages).toContain('Username must be at least 2 characters long.');
+        expect(actualMessages).toContain(
+          'Username must be at least 2 characters long.',
+        );
       });
     });
 
@@ -77,7 +81,9 @@ describe('RegisterUserDto', () => {
         const actualMessages = await getMessagesFor(inputDto);
 
         // Assert
-        expect(actualMessages).toContain('Username must not exceed 20 characters.');
+        expect(actualMessages).toContain(
+          'Username must not exceed 20 characters.',
+        );
       });
     });
 
@@ -118,7 +124,9 @@ describe('RegisterUserDto', () => {
         const actualMessages = await getMessagesFor(inputDto);
 
         // Assert
-        expect(actualMessages).toContain('Password must be at least 8 characters long.');
+        expect(actualMessages).toContain(
+          'Password must be at least 8 characters long.',
+        );
       });
     });
 
@@ -144,7 +152,9 @@ describe('RegisterUserDto', () => {
         const actualMessages = await getMessagesFor(inputDto);
 
         // Assert
-        expect(actualMessages).toContain('Password must not exceed 20 characters.');
+        expect(actualMessages).toContain(
+          'Password must not exceed 20 characters.',
+        );
       });
     });
 

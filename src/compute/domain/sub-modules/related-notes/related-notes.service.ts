@@ -28,8 +28,14 @@ export class RelatedNotesService {
     if (allNotes.length === 0) {
       return;
     }
-    await this.upsertEmbeddingsForNotes(allNotes.map((n) => ({ id: n.id, title: n.title, content: n.content })), userId);
-    await this.recomputeRelatedRecordsForAllNotes(allNotes.map((n) => n.id), userId);
+    await this.upsertEmbeddingsForNotes(
+      allNotes.map((n) => ({ id: n.id, title: n.title, content: n.content })),
+      userId,
+    );
+    await this.recomputeRelatedRecordsForAllNotes(
+      allNotes.map((n) => n.id),
+      userId,
+    );
   }
 
   async removeEmbeddingForNote(noteId: NoteId, userId: UserId): Promise<void> {
@@ -37,7 +43,10 @@ export class RelatedNotesService {
     await this.relatedNotesRecordRepository.deleteByPrimaryNoteId(noteId);
     await this.relatedNotesRecordRepository.deleteByAssociatedNoteId(noteId);
     const remainingNotes = await this.noteRepository.findAllByUserId(userId);
-    await this.recomputeRelatedRecordsForAllNotes(remainingNotes.map((n) => n.id), userId);
+    await this.recomputeRelatedRecordsForAllNotes(
+      remainingNotes.map((n) => n.id),
+      userId,
+    );
   }
 
   private async upsertEmbeddingsForNotes(
@@ -51,26 +60,43 @@ export class RelatedNotesService {
           model: openai.embedding(EMBEDDING_MODEL),
           value: text,
         });
-        await this.noteEmbeddingRepository.upsertEmbedding(note.id, userId, embedding);
+        await this.noteEmbeddingRepository.upsertEmbedding(
+          note.id,
+          userId,
+          embedding,
+        );
       }),
     );
   }
 
-  private async recomputeRelatedRecordsForAllNotes(noteIds: NoteId[], userId: UserId): Promise<void> {
+  private async recomputeRelatedRecordsForAllNotes(
+    noteIds: NoteId[],
+    userId: UserId,
+  ): Promise<void> {
     await Promise.all(
       noteIds.map(async (noteId) => {
-        const similar = await this.noteEmbeddingRepository.findSimilarNotes(noteId, userId);
-        const noteMap = await this.buildNoteTitleMap(similar.map((s) => s.noteId));
+        const similar = await this.noteEmbeddingRepository.findSimilarNotes(
+          noteId,
+          userId,
+        );
+        const noteMap = await this.buildNoteTitleMap(
+          similar.map((s) => s.noteId),
+        );
         const related = similar.map((s) => ({
           associatedNoteId: s.noteId,
           associatedNoteTitle: noteMap.get(s.noteId) ?? '',
         }));
-        await this.relatedNotesRecordRepository.replaceForPrimaryNote(noteId, related);
+        await this.relatedNotesRecordRepository.replaceForPrimaryNote(
+          noteId,
+          related,
+        );
       }),
     );
   }
 
-  private async buildNoteTitleMap(noteIds: NoteId[]): Promise<Map<NoteId, string>> {
+  private async buildNoteTitleMap(
+    noteIds: NoteId[],
+  ): Promise<Map<NoteId, string>> {
     const titleMap = new Map<NoteId, string>();
     await Promise.all(
       noteIds.map(async (id) => {

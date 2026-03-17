@@ -7,7 +7,21 @@ import { SuggestedWebContentRecordRepository } from '../infrastructure/repositor
 import { NoteEmbeddingRepository } from '../infrastructure/repositories/note-embedding.repository';
 
 export const repositoryRegistry = {
-  imports: [TypeOrmModule.forFeature([RelatedNotesRecord, SuggestedWebContentRecord, NoteEmbedding])],
-  providers: [RelatedNotesRecordRepository, SuggestedWebContentRecordRepository, NoteEmbeddingRepository],
-  exports: [RelatedNotesRecordRepository, SuggestedWebContentRecordRepository, NoteEmbeddingRepository],
+  imports: [
+    TypeOrmModule.forFeature([
+      RelatedNotesRecord,
+      SuggestedWebContentRecord,
+      NoteEmbedding,
+    ]),
+  ],
+  providers: [
+    RelatedNotesRecordRepository,
+    SuggestedWebContentRecordRepository,
+    NoteEmbeddingRepository,
+  ],
+  exports: [
+    RelatedNotesRecordRepository,
+    SuggestedWebContentRecordRepository,
+    NoteEmbeddingRepository,
+  ],
 };

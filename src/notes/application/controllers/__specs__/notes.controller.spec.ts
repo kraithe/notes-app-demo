@@ -9,7 +9,9 @@ import type { AuthenticatedUser } from '../../../../auth/domain/strategies/jwt.s
 import type { NoteId } from '../../../domain/entities/note.entity';
 import type { UserId } from '../../../../users/domain/entities/user.entity';
 
-const buildAuthUserMock = (overrides: Partial<AuthenticatedUser> = {}): AuthenticatedUser => ({
+const buildAuthUserMock = (
+  overrides: Partial<AuthenticatedUser> = {},
+): AuthenticatedUser => ({
   userId: 10 as UserId,
   username: 'testuser',
   jti: 'test-jti',
@@ -17,10 +19,14 @@ const buildAuthUserMock = (overrides: Partial<AuthenticatedUser> = {}): Authenti
   ...overrides,
 });
 
-const buildRequestMock = (user: AuthenticatedUser): Request & { user: AuthenticatedUser } =>
-  ({ user } as Request & { user: AuthenticatedUser });
+const buildRequestMock = (
+  user: AuthenticatedUser,
+): Request & { user: AuthenticatedUser } =>
+  ({ user }) as Request & { user: AuthenticatedUser };
 
-const buildNoteDtoMock = (overrides: Partial<NoteResponseDto> = {}): NoteResponseDto =>
+const buildNoteDtoMock = (
+  overrides: Partial<NoteResponseDto> = {},
+): NoteResponseDto =>
   Object.assign(new NoteResponseDto(), {
     id: 1,
     ownedByUserId: 10,
@@ -60,20 +66,27 @@ describe('NotesController', () => {
       // Arrange
       const inputUser = buildAuthUserMock({ userId: 42 as UserId });
       const inputReq = buildRequestMock(inputUser);
-      const expectedResponse: GetAllNotesResponseDto = { notes: [buildSummaryMock()], mostRecentNote: buildNoteDtoMock() };
+      const expectedResponse: GetAllNotesResponseDto = {
+        notes: [buildSummaryMock()],
+        mostRecentNote: buildNoteDtoMock(),
+      };
       notesServiceMock.getAllNotes.mockResolvedValue(expectedResponse);
 
       // Act
       await target.getAllNotes(inputReq);
 
       // Assert
-      expect(notesServiceMock.getAllNotes).toHaveBeenNthCalledWith(1, 42);
+      const getAllNotesSpy = jest.mocked(notesServiceMock.getAllNotes);
+      expect(getAllNotesSpy).toHaveBeenNthCalledWith(1, 42);
     });
 
     it('when called, then it returns the response from NotesService', async () => {
       // Arrange
       const inputReq = buildRequestMock(buildAuthUserMock());
-      const expectedResponse: GetAllNotesResponseDto = { notes: [], mostRecentNote: null };
+      const expectedResponse: GetAllNotesResponseDto = {
+        notes: [],
+        mostRecentNote: null,
+      };
       notesServiceMock.getAllNotes.mockResolvedValue(expectedResponse);
 
       // Act
@@ -87,14 +100,17 @@ describe('NotesController', () => {
   describe('getNote', () => {
     it('when called, then it delegates to NotesService with the correct id and user id', async () => {
       // Arrange
-      const inputReq = buildRequestMock(buildAuthUserMock({ userId: 10 as UserId }));
+      const inputReq = buildRequestMock(
+        buildAuthUserMock({ userId: 10 as UserId }),
+      );
       notesServiceMock.getNote.mockResolvedValue(buildNoteDtoMock());
 
       // Act
       await target.getNote(5, inputReq);
 
       // Assert
-      expect(notesServiceMock.getNote).toHaveBeenNthCalledWith(1, 5, 10);
+      const getNoteSpy = jest.mocked(notesServiceMock.getNote);
+      expect(getNoteSpy).toHaveBeenNthCalledWith(1, 5, 10);
     });
 
     it('when called, then it returns the note from NotesService', async () => {
@@ -114,8 +130,13 @@ describe('NotesController', () => {
   describe('createNote', () => {
     it('when called, then it passes sanitized title and content to NotesService', async () => {
       // Arrange
-      const inputReq = buildRequestMock(buildAuthUserMock({ userId: 10 as UserId }));
-      const inputDto: CreateNoteDto = { title: 'My <b>Note</b>', content: '<script>bad</script>Content' };
+      const inputReq = buildRequestMock(
+        buildAuthUserMock({ userId: 10 as UserId }),
+      );
+      const inputDto: CreateNoteDto = {
+        title: 'My <b>Note</b>',
+        content: '<script>bad</script>Content',
+      };
       notesServiceMock.createNote.mockResolvedValue(buildNoteDtoMock());
 
       // Act
@@ -130,7 +151,9 @@ describe('NotesController', () => {
 
     it('when called, then it delegates with the correct userId', async () => {
       // Arrange
-      const inputReq = buildRequestMock(buildAuthUserMock({ userId: 77 as UserId }));
+      const inputReq = buildRequestMock(
+        buildAuthUserMock({ userId: 77 as UserId }),
+      );
       const inputDto: CreateNoteDto = { title: 'Title', content: 'Content' };
       notesServiceMock.createNote.mockResolvedValue(buildNoteDtoMock());
 
@@ -160,7 +183,10 @@ describe('NotesController', () => {
     it('when called, then it passes sanitized title and content to NotesService', async () => {
       // Arrange
       const inputReq = buildRequestMock(buildAuthUserMock());
-      const inputDto: UpdateNoteDto = { title: '<em>Title</em>', content: '<img src=x onerror=alert(1)>Content' };
+      const inputDto: UpdateNoteDto = {
+        title: '<em>Title</em>',
+        content: '<img src=x onerror=alert(1)>Content',
+      };
       notesServiceMock.updateNote.mockResolvedValue(buildNoteDtoMock());
 
       // Act
@@ -175,7 +201,9 @@ describe('NotesController', () => {
 
     it('when called, then it delegates with the correct noteId and userId', async () => {
       // Arrange
-      const inputReq = buildRequestMock(buildAuthUserMock({ userId: 10 as UserId }));
+      const inputReq = buildRequestMock(
+        buildAuthUserMock({ userId: 10 as UserId }),
+      );
       const inputDto: UpdateNoteDto = { title: 'T', content: 'C' };
       notesServiceMock.updateNote.mockResolvedValue(buildNoteDtoMock());
 
@@ -191,14 +219,17 @@ describe('NotesController', () => {
   describe('deleteNote', () => {
     it('when called, then it delegates to NotesService with the correct noteId and userId', async () => {
       // Arrange
-      const inputReq = buildRequestMock(buildAuthUserMock({ userId: 10 as UserId }));
+      const inputReq = buildRequestMock(
+        buildAuthUserMock({ userId: 10 as UserId }),
+      );
       notesServiceMock.deleteNote.mockResolvedValue(undefined);
 
       // Act
       await target.deleteNote(8, inputReq);
 
       // Assert
-      expect(notesServiceMock.deleteNote).toHaveBeenNthCalledWith(1, 8 as NoteId, 10);
+      const deleteNoteSpy = jest.mocked(notesServiceMock.deleteNote);
+      expect(deleteNoteSpy).toHaveBeenNthCalledWith(1, 8 as NoteId, 10);
     });
   });
 });

@@ -1,5 +1,10 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { GetAllNotesResponseDto } from '../../../dtos/responses/get-all-notes.response.dto';
 
 export const GetAllNotesSwagger = (): MethodDecorator =>

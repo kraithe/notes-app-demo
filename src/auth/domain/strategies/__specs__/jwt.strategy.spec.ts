@@ -4,7 +4,10 @@ import { UserRepository } from '../../../../users/infrastructure/repositories/us
 import { TokenBlacklistService } from '../../services/token-blacklist.service';
 import { JwtStrategy } from '../jwt.strategy';
 import type { JwtPayload } from '../../jwt-payload.type';
-import type { User, UserId } from '../../../../users/domain/entities/user.entity';
+import type {
+  User,
+  UserId,
+} from '../../../../users/domain/entities/user.entity';
 
 const buildPayloadMock = (overrides: Partial<JwtPayload> = {}): JwtPayload => ({
   sub: 1 as UserId,
@@ -92,7 +95,8 @@ describe('JwtStrategy', () => {
       await expect(target.validate(inputPayload)).rejects.toThrow();
 
       // Assert
-      expect(userRepositoryMock.findById).not.toHaveBeenCalled();
+      const findByIdSpy = jest.mocked(userRepositoryMock.findById);
+      expect(findByIdSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -121,20 +125,24 @@ describe('JwtStrategy', () => {
       await target.validate(inputPayload);
 
       // Assert
-      expect(tokenBlacklistServiceMock.isRevoked).toHaveBeenNthCalledWith(1, 'specific-jti');
+      const isRevokedSpy = jest.mocked(tokenBlacklistServiceMock.isRevoked);
+      expect(isRevokedSpy).toHaveBeenNthCalledWith(1, 'specific-jti');
     });
 
     it('when validate is called, then findById is called with the correct user id', async () => {
       // Arrange
       const inputPayload = buildPayloadMock({ sub: 99 as UserId });
       tokenBlacklistServiceMock.isRevoked.mockReturnValue(false);
-      userRepositoryMock.findById.mockResolvedValue(buildUserMock({ id: 99 as UserId }));
+      userRepositoryMock.findById.mockResolvedValue(
+        buildUserMock({ id: 99 as UserId }),
+      );
 
       // Act
       await target.validate(inputPayload);
 
       // Assert
-      expect(userRepositoryMock.findById).toHaveBeenNthCalledWith(1, 99);
+      const findByIdSpy = jest.mocked(userRepositoryMock.findById);
+      expect(findByIdSpy).toHaveBeenNthCalledWith(1, 99);
     });
   });
 });

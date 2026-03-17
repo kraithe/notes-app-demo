@@ -14,7 +14,6 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { NotesModule } from './notes/notes.module';
 import { ComputeModule } from './compute/compute.module';
-import type { DataSource } from 'typeorm';
 
 const THROTTLER_TTL_SECONDS = 60;
 const THROTTLER_LIMIT = 30;
@@ -34,7 +33,13 @@ const THROTTLER_LIMIT = 30;
           'notes_password',
         ),
         database: configService.get<string>('POSTGRES_DB', 'notes_db'),
-        entities: [User, Note, RelatedNotesRecord, SuggestedWebContentRecord, NoteEmbedding],
+        entities: [
+          User,
+          Note,
+          RelatedNotesRecord,
+          SuggestedWebContentRecord,
+          NoteEmbedding,
+        ],
         synchronize: true,
         installExtensions: true,
         extra: { max: 10 },

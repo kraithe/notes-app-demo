@@ -39,7 +39,8 @@ describe('NoteRepository', () => {
       await target.findAllByUserId(inputUserId);
 
       // Assert
-      expect(typeOrmRepoMock.find).toHaveBeenNthCalledWith(1, {
+      const findSpy = jest.mocked(typeOrmRepoMock.find);
+      expect(findSpy).toHaveBeenNthCalledWith(1, {
         where: { ownedByUserId: inputUserId },
         order: { lastModifiedDate: 'DESC' },
       });
@@ -48,7 +49,10 @@ describe('NoteRepository', () => {
     it('when notes exist, then it returns all notes for the user', async () => {
       // Arrange
       const inputUserId = 10 as UserId;
-      const expectedNotes = [buildNoteMock(), buildNoteMock({ id: 2 as NoteId })];
+      const expectedNotes = [
+        buildNoteMock(),
+        buildNoteMock({ id: 2 as NoteId }),
+      ];
       typeOrmRepoMock.find.mockResolvedValue(expectedNotes);
 
       // Act
@@ -79,7 +83,10 @@ describe('NoteRepository', () => {
       typeOrmRepoMock.findOneBy.mockResolvedValue(expectedNote);
 
       // Act
-      const actualResult = await target.findOneByIdAndUserId(inputNoteId, inputUserId);
+      const actualResult = await target.findOneByIdAndUserId(
+        inputNoteId,
+        inputUserId,
+      );
 
       // Assert
       expect(actualResult).toEqual(expectedNote);
@@ -90,7 +97,10 @@ describe('NoteRepository', () => {
       typeOrmRepoMock.findOneBy.mockResolvedValue(null);
 
       // Act
-      const actualResult = await target.findOneByIdAndUserId(99 as NoteId, 10 as UserId);
+      const actualResult = await target.findOneByIdAndUserId(
+        99 as NoteId,
+        10 as UserId,
+      );
 
       // Assert
       expect(actualResult).toBeNull();
@@ -106,7 +116,8 @@ describe('NoteRepository', () => {
       await target.findOneByIdAndUserId(inputNoteId, inputUserId);
 
       // Assert
-      expect(typeOrmRepoMock.findOneBy).toHaveBeenNthCalledWith(1, {
+      const findOneBySpy = jest.mocked(typeOrmRepoMock.findOneBy);
+      expect(findOneBySpy).toHaveBeenNthCalledWith(1, {
         id: inputNoteId,
         ownedByUserId: inputUserId,
       });
@@ -119,12 +130,19 @@ describe('NoteRepository', () => {
       const inputUserId = 10 as UserId;
       const inputTitle = 'New Title';
       const inputContent = 'New content';
-      const mockCreated = buildNoteMock({ title: inputTitle, content: inputContent });
+      const mockCreated = buildNoteMock({
+        title: inputTitle,
+        content: inputContent,
+      });
       typeOrmRepoMock.create.mockReturnValue(mockCreated);
       typeOrmRepoMock.save.mockResolvedValue(mockCreated);
 
       // Act
-      const actualResult = await target.createNote(inputUserId, inputTitle, inputContent);
+      const actualResult = await target.createNote(
+        inputUserId,
+        inputTitle,
+        inputContent,
+      );
 
       // Assert
       expect(actualResult).toEqual(mockCreated);
@@ -143,7 +161,8 @@ describe('NoteRepository', () => {
       await target.createNote(inputUserId, inputTitle, inputContent);
 
       // Assert
-      expect(typeOrmRepoMock.create).toHaveBeenNthCalledWith(1, {
+      const createSpy = jest.mocked(typeOrmRepoMock.create);
+      expect(createSpy).toHaveBeenNthCalledWith(1, {
         ownedByUserId: inputUserId,
         title: inputTitle,
         content: inputContent,
@@ -154,16 +173,24 @@ describe('NoteRepository', () => {
   describe('updateNote', () => {
     it('when called, then it mutates title and content on the note before saving', async () => {
       // Arrange
-      const inputNote = buildNoteMock({ title: 'Old Title', content: 'Old content' });
+      const inputNote = buildNoteMock({
+        title: 'Old Title',
+        content: 'Old content',
+      });
       const inputTitle = 'Updated Title';
       const inputContent = 'Updated content';
-      typeOrmRepoMock.save.mockResolvedValue({ ...inputNote, title: inputTitle, content: inputContent } as Note);
+      typeOrmRepoMock.save.mockResolvedValue({
+        ...inputNote,
+        title: inputTitle,
+        content: inputContent,
+      } as Note);
 
       // Act
       await target.updateNote(inputNote, inputTitle, inputContent);
 
       // Assert
-      expect(typeOrmRepoMock.save).toHaveBeenNthCalledWith(
+      const saveSpy = jest.mocked(typeOrmRepoMock.save);
+      expect(saveSpy).toHaveBeenNthCalledWith(
         1,
         expect.objectContaining({ title: inputTitle, content: inputContent }),
       );
@@ -176,7 +203,11 @@ describe('NoteRepository', () => {
       typeOrmRepoMock.save.mockResolvedValue(expectedNote);
 
       // Act
-      const actualResult = await target.updateNote(inputNote, 'New Title', 'content');
+      const actualResult = await target.updateNote(
+        inputNote,
+        'New Title',
+        'content',
+      );
 
       // Assert
       expect(actualResult).toEqual(expectedNote);
@@ -193,7 +224,8 @@ describe('NoteRepository', () => {
       await target.deleteNote(inputNote);
 
       // Assert
-      expect(typeOrmRepoMock.remove).toHaveBeenNthCalledWith(1, inputNote);
+      const removeSpy = jest.mocked(typeOrmRepoMock.remove);
+      expect(removeSpy).toHaveBeenNthCalledWith(1, inputNote);
     });
   });
 });

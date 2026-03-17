@@ -29,7 +29,10 @@ describe('GetAllNotesTS', () => {
     it('when apply is called, then it returns a summary for each note', async () => {
       // Arrange
       const inputUserId = 10 as UserId;
-      const inputNotes = [buildNoteMock({ id: 1 as NoteId }), buildNoteMock({ id: 2 as NoteId })];
+      const inputNotes = [
+        buildNoteMock({ id: 1 as NoteId }),
+        buildNoteMock({ id: 2 as NoteId }),
+      ];
       noteRepositoryMock.findAllByUserId.mockResolvedValue(inputNotes);
 
       // Act
@@ -78,7 +81,11 @@ describe('GetAllNotesTS', () => {
     it('when apply is called, then each summary includes the correct id, ownedByUserId, and lastModifiedDate', async () => {
       // Arrange
       const inputDate = new Date('2024-06-01');
-      const inputNote = buildNoteMock({ id: 7 as NoteId, ownedByUserId: 42 as UserId, lastModifiedDate: inputDate });
+      const inputNote = buildNoteMock({
+        id: 7 as NoteId,
+        ownedByUserId: 42 as UserId,
+        lastModifiedDate: inputDate,
+      });
       noteRepositoryMock.findAllByUserId.mockResolvedValue([inputNote]);
 
       // Act
@@ -113,6 +120,7 @@ describe('GetAllNotesTS', () => {
     await target.apply({ userId: inputUserId });
 
     // Assert
-    expect(noteRepositoryMock.findAllByUserId).toHaveBeenNthCalledWith(1, inputUserId);
+    const findAllSpy = jest.mocked(noteRepositoryMock.findAllByUserId);
+    expect(findAllSpy).toHaveBeenNthCalledWith(1, inputUserId);
   });
 });

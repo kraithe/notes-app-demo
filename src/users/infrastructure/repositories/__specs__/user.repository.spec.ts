@@ -63,7 +63,8 @@ describe('UserRepository', () => {
       await target.findById(inputId);
 
       // Assert
-      expect(typeOrmRepoMock.findOneBy).toHaveBeenNthCalledWith(1, { id: inputId });
+      const findOneBySpy = jest.mocked(typeOrmRepoMock.findOneBy);
+      expect(findOneBySpy).toHaveBeenNthCalledWith(1, { id: inputId });
     });
   });
 
@@ -105,7 +106,8 @@ describe('UserRepository', () => {
       await target.findByUsername(inputUsername);
 
       // Assert
-      expect(typeOrmRepoMock.findOneBy).toHaveBeenNthCalledWith(1, { name: inputUsername });
+      const findOneBySpy = jest.mocked(typeOrmRepoMock.findOneBy);
+      expect(findOneBySpy).toHaveBeenNthCalledWith(1, { name: inputUsername });
     });
   });
 
@@ -114,14 +116,20 @@ describe('UserRepository', () => {
       // Arrange
       const inputUsername = 'newuser';
       const inputHashedPassword = '$2b$10$newhash';
-      const mockCreated = buildUserMock({ name: inputUsername, password: inputHashedPassword });
+      const mockCreated = buildUserMock({
+        name: inputUsername,
+        password: inputHashedPassword,
+      });
       const mockSaved = buildUserMock({ id: 5 as UserId, name: inputUsername });
 
       typeOrmRepoMock.create.mockReturnValue(mockCreated);
       typeOrmRepoMock.save.mockResolvedValue(mockSaved);
 
       // Act
-      const actualResult = await target.createUser(inputUsername, inputHashedPassword);
+      const actualResult = await target.createUser(
+        inputUsername,
+        inputHashedPassword,
+      );
 
       // Assert
       expect(actualResult).toEqual(mockSaved);
@@ -140,7 +148,8 @@ describe('UserRepository', () => {
       await target.createUser(inputUsername, inputHashedPassword);
 
       // Assert
-      expect(typeOrmRepoMock.create).toHaveBeenNthCalledWith(1, {
+      const createSpy = jest.mocked(typeOrmRepoMock.create);
+      expect(createSpy).toHaveBeenNthCalledWith(1, {
         name: inputUsername,
         password: inputHashedPassword,
       });

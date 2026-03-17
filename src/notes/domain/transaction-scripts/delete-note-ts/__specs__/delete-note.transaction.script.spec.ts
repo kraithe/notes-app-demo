@@ -38,16 +38,22 @@ describe('DeleteNoteTS', () => {
       await target.apply({ noteId: 1 as NoteId, userId: 10 as UserId });
 
       // Assert
-      expect(noteRepositoryMock.deleteNote).toHaveBeenNthCalledWith(1, inputNote);
+      const deleteNoteSpy = jest.mocked(noteRepositoryMock.deleteNote);
+      expect(deleteNoteSpy).toHaveBeenNthCalledWith(1, inputNote);
     });
 
     it('when apply is called, then it resolves without returning a value', async () => {
       // Arrange
-      noteRepositoryMock.findOneByIdAndUserId.mockResolvedValue(buildNoteMock());
+      noteRepositoryMock.findOneByIdAndUserId.mockResolvedValue(
+        buildNoteMock(),
+      );
       noteRepositoryMock.deleteNote.mockResolvedValue(undefined);
 
       // Act
-      const actualResult = await target.apply({ noteId: 1 as NoteId, userId: 10 as UserId });
+      const actualResult = await target.apply({
+        noteId: 1 as NoteId,
+        userId: 10 as UserId,
+      });
 
       // Assert
       expect(actualResult).toBeUndefined();
@@ -75,7 +81,8 @@ describe('DeleteNoteTS', () => {
       ).rejects.toThrow();
 
       // Assert
-      expect(noteRepositoryMock.deleteNote).not.toHaveBeenCalled();
+      const deleteNoteSpy = jest.mocked(noteRepositoryMock.deleteNote);
+      expect(deleteNoteSpy).not.toHaveBeenCalled();
     });
   });
 });

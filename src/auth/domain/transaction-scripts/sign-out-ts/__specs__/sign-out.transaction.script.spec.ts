@@ -23,7 +23,8 @@ describe('SignOutTS', () => {
       target.apply(inputParam);
 
       // Assert
-      expect(tokenBlacklistServiceMock.revokeToken).toHaveBeenNthCalledWith(
+      const revokeTokenSpy = jest.mocked(tokenBlacklistServiceMock.revokeToken);
+      expect(revokeTokenSpy).toHaveBeenNthCalledWith(
         1,
         inputParam.jti,
         inputParam.exp,
@@ -38,7 +39,8 @@ describe('SignOutTS', () => {
       target.apply(inputParam);
 
       // Assert
-      expect(tokenBlacklistServiceMock.revokeToken).toHaveBeenCalledTimes(1);
+      const revokeTokenSpy = jest.mocked(tokenBlacklistServiceMock.revokeToken);
+      expect(revokeTokenSpy).toHaveBeenCalledTimes(1);
     });
   });
 });

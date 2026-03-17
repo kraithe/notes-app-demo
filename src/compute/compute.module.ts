@@ -6,10 +6,7 @@ import { RelatedNotesService } from './domain/sub-modules/related-notes/related-
 import { SuggestedWebContentService } from './domain/sub-modules/suggested-web-content/suggested-web-content.service';
 
 @Module({
-  imports: [
-    ...repositoryRegistry.imports,
-    forwardRef(() => NotesModule),
-  ],
+  imports: [...repositoryRegistry.imports, forwardRef(() => NotesModule)],
   providers: [
     ...repositoryRegistry.providers,
     RelatedNotesService,

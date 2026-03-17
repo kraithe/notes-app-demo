@@ -19,7 +19,11 @@ export class NoteEmbeddingRepository {
     private readonly repo: Repository<NoteEmbedding>,
   ) {}
 
-  async upsertEmbedding(noteId: NoteId, userId: UserId, embedding: number[]): Promise<void> {
+  async upsertEmbedding(
+    noteId: NoteId,
+    userId: UserId,
+    embedding: number[],
+  ): Promise<void> {
     const vectorLiteral = `[${embedding.join(',')}]`;
     await this.repo.query(
       `INSERT INTO note_embeddings (note_id, user_id, embedding)
@@ -37,8 +41,12 @@ export class NoteEmbeddingRepository {
    * Returns up to MAX_RELATED_NOTES notes most similar to the given note,
    * excluding the note itself, ordered by cosine similarity descending.
    */
-  async findSimilarNotes(noteId: NoteId, userId: UserId): Promise<SimilarNoteResult[]> {
-    const rows = await this.repo.query(
+  async findSimilarNotes(
+    noteId: NoteId,
+    userId: UserId,
+  ): Promise<SimilarNoteResult[]> {
+    type RawRow = { note_id: number; similarity: number };
+    const rows = await this.repo.query<RawRow[]>(
       `SELECT target.note_id,
               1 - (source.embedding <=> target.embedding) AS similarity
        FROM note_embeddings source
@@ -51,14 +59,17 @@ export class NoteEmbeddingRepository {
        LIMIT $3`,
       [noteId, userId, MAX_RELATED_NOTES],
     );
-    return rows.map((row: { note_id: number; similarity: number }) => ({
+    return rows.map((row) => ({
       noteId: row.note_id as NoteId,
       similarity: row.similarity,
     }));
   }
 
   async findAllNoteIdsByUserId(userId: UserId): Promise<NoteId[]> {
-    const rows = await this.repo.find({ where: { userId }, select: ['noteId'] });
+    const rows = await this.repo.find({
+      where: { userId },
+      select: ['noteId'],
+    });
     return rows.map((r) => r.noteId);
   }
 }
