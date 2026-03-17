@@ -7,18 +7,16 @@ import { SuggestedWebContentRecordRepository } from '../../../infrastructure/rep
 import type { NoteId } from '../../../../notes/domain/entities/note.entity';
 import { DomainEventBus } from '../../../../common/events/domain-event-bus.service';
 
-const CHAT_MODEL = 'claude-3-haiku@20240307';
+const CHAT_MODEL = 'claude-haiku-4-5';
 const MAX_SUGGESTIONS = 3;
 
 const WebContentSuggestionSchema = z.object({
-  suggestions: z
-    .array(
-      z.object({
-        url: z.string().url(),
-        title: z.string().min(1),
-      }),
-    )
-    .max(MAX_SUGGESTIONS),
+  suggestions: z.array(
+    z.object({
+      url: z.string().url(),
+      title: z.string().min(1),
+    }),
+  ),
 });
 
 type WebContentSuggestion = z.infer<
@@ -91,14 +89,14 @@ export class SuggestedWebContentService {
       const { object } = await generateObject({
         model: anthropic(CHAT_MODEL),
         schema: WebContentSuggestionSchema,
-        prompt: `You are a research assistant. Based on the following note, suggest up to ${MAX_SUGGESTIONS} relevant web resources a reader might find useful. Include a mix of types such as articles, blog posts, YouTube videos, or documentation pages. Do not suggest websites known primarily for explicit content. Return only real, publicly accessible URLs with accurate titles.
+        prompt: `You are a research assistant. Based on the following note, suggest **at most ${MAX_SUGGESTIONS}** distinct web resources a reader might find useful. Include a mix of types such as articles, blog posts, YouTube videos, or documentation pages. Do not suggest websites or content that are clearly explicit, illegal or otherwise objectionable. Return only real, publicly accessible URLs with accurate titles.
 
 Note title: ${title}
 
 Note content (preview):
 ${notePreview}
 
-Return an array of up to ${MAX_SUGGESTIONS} objects, each with a "url" and "title" field.`,
+Return an array of **no more than ${MAX_SUGGESTIONS}** objects, each with a "url" and "title" field.`,
       });
       this.eventBus.emitLlm({
         kind: 'web-content',
@@ -106,7 +104,9 @@ Return an array of up to ${MAX_SUGGESTIONS} objects, each with a "url" and "titl
         success: true,
         durationMs: Date.now() - started,
       });
-      return object.suggestions;
+      // Enforce our own max length instead of relying on JSON Schema features
+      // that some providers (like Anthropic tools) don't support.
+      return object.suggestions.slice(0, MAX_SUGGESTIONS);
     } catch (err) {
       this.logger.error('Web content suggestion generation failed', err);
       this.eventBus.emitLlm({
