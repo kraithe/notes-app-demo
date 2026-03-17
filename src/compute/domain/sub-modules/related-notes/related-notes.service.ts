@@ -9,7 +9,7 @@ import { DomainEventBus } from '../../../../common/events/domain-event-bus.servi
 // UserId is used in method signatures but not in the buildNoteTitleMap helper
 
 const MAX_RELATED = 5;
-const MIN_SIMILARITY = 0.10;
+const MIN_SIMILARITY = 0.07;
 
 @Injectable()
 export class RelatedNotesService {
