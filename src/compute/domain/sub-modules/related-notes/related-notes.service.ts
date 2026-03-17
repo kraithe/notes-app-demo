@@ -16,6 +16,8 @@ const EMBEDDING_MODEL = 'text-embedding-3-small';
 @Injectable()
 export class RelatedNotesService {
   private readonly logger = new Logger(RelatedNotesService.name);
+  private readonly embeddingCooldownMs = 60_000;
+  private readonly lastEmbeddedAtByNoteId = new Map<number, number>();
 
   constructor(
     private readonly configService: ConfigService,
@@ -30,10 +32,15 @@ export class RelatedNotesService {
     if (allNotes.length === 0) {
       return;
     }
-    await this.upsertEmbeddingsForNotes(
-      allNotes.map((n) => ({ id: n.id, title: n.title, content: n.content })),
-      userId,
-    );
+    // Avoid spamming the embedding API: only embed the changed note. Existing
+    // embeddings for the other notes remain valid for similarity search.
+    const changed = allNotes.find((n) => n.id === changedNoteId);
+    if (changed) {
+      await this.upsertEmbeddingsForNotes(
+        [{ id: changed.id, title: changed.title, content: changed.content }],
+        userId,
+      );
+    }
     await this.recomputeRelatedRecordsForAllNotes(
       allNotes.map((n) => n.id),
       userId,
@@ -63,6 +70,12 @@ export class RelatedNotesService {
 
     await Promise.all(
       notes.map(async (note) => {
+        const now = Date.now();
+        const last = this.lastEmbeddedAtByNoteId.get(note.id as unknown as number);
+        if (last && now - last < this.embeddingCooldownMs) {
+          return;
+        }
+
         const text = `${note.title}\n\n${note.content}`;
         const started = Date.now();
         try {
@@ -75,6 +88,7 @@ export class RelatedNotesService {
             userId,
             embedding,
           );
+          this.lastEmbeddedAtByNoteId.set(note.id as unknown as number, now);
           this.eventBus.emitLlm({
             kind: 'embedding',
             model: EMBEDDING_MODEL,

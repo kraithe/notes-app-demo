@@ -28,6 +28,8 @@ type WebContentSuggestion = z.infer<
 @Injectable()
 export class SuggestedWebContentService {
   private readonly logger = new Logger(SuggestedWebContentService.name);
+  private readonly suggestionsCooldownMs = 60_000;
+  private readonly lastSuggestedAtByNoteId = new Map<number, number>();
 
   constructor(
     private readonly configService: ConfigService,
@@ -40,6 +42,12 @@ export class SuggestedWebContentService {
     title: string,
     content: string,
   ): Promise<void> {
+    const now = Date.now();
+    const last = this.lastSuggestedAtByNoteId.get(noteId as unknown as number);
+    if (last && now - last < this.suggestionsCooldownMs) {
+      return;
+    }
+
     const suggestions = await this.fetchWebContentSuggestions(title, content);
     await this.suggestedWebContentRecordRepository.replaceForNote(
       noteId,
@@ -48,6 +56,7 @@ export class SuggestedWebContentService {
         webContentTitle: s.title,
       })),
     );
+    this.lastSuggestedAtByNoteId.set(noteId as unknown as number, now);
   }
 
   async deleteForNote(noteId: NoteId): Promise<void> {
