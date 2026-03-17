@@ -103,7 +103,7 @@ export default function NotesPage() {
       try {
         // Compute runs async in the backend (fire-and-forget). Poll a few times
         // so the UI doesn't look "stuck" right after a save.
-        const MAX_ATTEMPTS = 6;
+        const MAX_ATTEMPTS = 3;
         for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
           const [related, web] = await Promise.all([
             api.getRelatedNotes(auth.token!, noteId),
@@ -116,8 +116,8 @@ export default function NotesPage() {
           // If we have *anything*, stop early.
           if (related.length > 0 || web.length > 0) break;
 
-          // Backoff: 250ms, 500ms, 1s, 1s, 1s...
-          const delayMs = attempt === 1 ? 250 : attempt === 2 ? 500 : 1000;
+          // Backoff: 500ms, 1s, 1.5s
+          const delayMs = attempt === 1 ? 500 : attempt === 2 ? 1000 : 1500;
           await new Promise((r) => setTimeout(r, delayMs));
           if (cancelled) return;
         }

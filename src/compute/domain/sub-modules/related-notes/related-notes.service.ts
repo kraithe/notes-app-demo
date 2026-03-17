@@ -11,7 +11,7 @@ import { DomainEventBus } from '../../../../common/events/domain-event-bus.servi
 
 // UserId is used in method signatures but not in the buildNoteTitleMap helper
 
-const EMBEDDING_MODEL = 'claude-3-haiku-20240307-embedding';
+const EMBEDDING_MODEL = 'claude-3-haiku@20240307';
 
 @Injectable()
 export class RelatedNotesService {

@@ -7,7 +7,7 @@ import { SuggestedWebContentRecordRepository } from '../../../infrastructure/rep
 import type { NoteId } from '../../../../notes/domain/entities/note.entity';
 import { DomainEventBus } from '../../../../common/events/domain-event-bus.service';
 
-const CHAT_MODEL = 'claude-3-haiku-20240307';
+const CHAT_MODEL = 'claude-3-haiku@20240307';
 const MAX_SUGGESTIONS = 3;
 
 const WebContentSuggestionSchema = z.object({
