@@ -27,14 +27,22 @@ const THROTTLER_LIMIT = 30;
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        host: configService.get<string>('POSTGRES_HOST', 'localhost'),
-        port: configService.get<number>('POSTGRES_PORT', 5432),
-        username: configService.get<string>('POSTGRES_USER', 'notes_user'),
-        password: configService.get<string>(
-          'POSTGRES_PASSWORD',
-          'notes_password',
-        ),
-        database: configService.get<string>('POSTGRES_DB', 'notes_db'),
+        // Prefer POSTGRES_* for local dev, but fall back to Railway's PG* vars
+        host:
+          configService.get<string>('POSTGRES_HOST') ??
+          configService.get<string>('PGHOST', 'localhost'),
+        port:
+          configService.get<number>('POSTGRES_PORT') ??
+          configService.get<number>('PGPORT', 5432),
+        username:
+          configService.get<string>('POSTGRES_USER') ??
+          configService.get<string>('PGUSER', 'notes_user'),
+        password:
+          configService.get<string>('POSTGRES_PASSWORD') ??
+          configService.get<string>('PGPASSWORD', 'notes_password'),
+        database:
+          configService.get<string>('POSTGRES_DB') ??
+          configService.get<string>('PGDATABASE', 'notes_db'),
         entities: [
           User,
           Note,
