@@ -28,7 +28,26 @@
 ## Project setup
 
 ```bash
+
+# Running locally requires npm, Docker, and Docker Compose
+
+# backend packages
 $ npm install
+
+# postgres, mastra
+$ docker compose up -d
+
+# start backend server, port 3000
+$ npm run start:dev
+
+# front-end directory
+$ cd frontend
+
+# install front-end dependencies
+$ npm install
+
+# start front-end, port 4001
+$ npm run dev -- -p 3001
 ```
 
 ## Compile and run the project
