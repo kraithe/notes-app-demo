@@ -4,6 +4,7 @@ import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
 import { SuggestedWebContentRecordRepository } from '../../../infrastructure/repositories/suggested-web-content-record.repository';
 import type { NoteId } from '../../../../notes/domain/entities/note.entity';
+import { DomainEventBus } from '../../../../common/events/domain-event-bus.service';
 
 const CHAT_MODEL = 'gpt-4o-mini';
 const MAX_SUGGESTIONS = 3;
@@ -29,6 +30,7 @@ export class SuggestedWebContentService {
 
   constructor(
     private readonly suggestedWebContentRecordRepository: SuggestedWebContentRecordRepository,
+    private readonly eventBus: DomainEventBus,
   ) {}
 
   async recomputeForNote(
@@ -57,10 +59,12 @@ export class SuggestedWebContentService {
     content: string,
   ): Promise<WebContentSuggestion[]> {
     const notePreview = content.slice(0, 500);
-    const { object } = await generateObject({
-      model: openai(CHAT_MODEL),
-      schema: WebContentSuggestionSchema,
-      prompt: `You are a research assistant. Based on the following note, suggest up to ${MAX_SUGGESTIONS} relevant web resources a reader might find useful. Include a mix of types such as articles, blog posts, YouTube videos, or documentation pages. Do not suggest websites known primarily for explicit content. Return only real, publicly accessible URLs with accurate titles.
+    const started = Date.now();
+    try {
+      const { object } = await generateObject({
+        model: openai(CHAT_MODEL),
+        schema: WebContentSuggestionSchema,
+        prompt: `You are a research assistant. Based on the following note, suggest up to ${MAX_SUGGESTIONS} relevant web resources a reader might find useful. Include a mix of types such as articles, blog posts, YouTube videos, or documentation pages. Do not suggest websites known primarily for explicit content. Return only real, publicly accessible URLs with accurate titles.
 
 Note title: ${title}
 
@@ -68,7 +72,25 @@ Note content (preview):
 ${notePreview}
 
 Return an array of up to ${MAX_SUGGESTIONS} objects, each with a "url" and "title" field.`,
-    });
-    return object.suggestions;
+      });
+      this.eventBus.emitLlm({
+        kind: 'web-content',
+        model: CHAT_MODEL,
+        success: true,
+        durationMs: Date.now() - started,
+      });
+      return object.suggestions;
+    } catch (err) {
+      this.logger.error('Web content suggestion generation failed', err);
+      this.eventBus.emitLlm({
+        kind: 'web-content',
+        model: CHAT_MODEL,
+        success: false,
+        durationMs: Date.now() - started,
+        errorName: err instanceof Error ? err.name : 'UnknownError',
+        errorMessage: err instanceof Error ? err.message : String(err),
+      });
+      throw err;
+    }
   }
 }

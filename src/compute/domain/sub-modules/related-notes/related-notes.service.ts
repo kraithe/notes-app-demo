@@ -7,6 +7,7 @@ import { RelatedNotesRecordRepository } from '../../../infrastructure/repositori
 import { NoteRepository } from '../../../../notes/infrastructure/repositories/note.repository';
 import type { NoteId } from '../../../../notes/domain/entities/note.entity';
 import type { UserId } from '../../../../users/domain/entities/user.entity';
+import { DomainEventBus } from '../../../../common/events/domain-event-bus.service';
 
 // UserId is used in method signatures but not in the buildNoteTitleMap helper
 
@@ -21,6 +22,7 @@ export class RelatedNotesService {
     private readonly noteEmbeddingRepository: NoteEmbeddingRepository,
     private readonly relatedNotesRecordRepository: RelatedNotesRecordRepository,
     private readonly noteRepository: NoteRepository,
+    private readonly eventBus: DomainEventBus,
   ) {}
 
   async recomputeForUser(changedNoteId: NoteId, userId: UserId): Promise<void> {
@@ -56,15 +58,43 @@ export class RelatedNotesService {
     await Promise.all(
       notes.map(async (note) => {
         const text = `${note.title}\n\n${note.content}`;
-        const { embedding } = await embed({
-          model: openai.embedding(EMBEDDING_MODEL),
-          value: text,
-        });
-        await this.noteEmbeddingRepository.upsertEmbedding(
-          note.id,
-          userId,
-          embedding,
-        );
+        const started = Date.now();
+        try {
+          const { embedding } = await embed({
+            model: openai.embedding(EMBEDDING_MODEL),
+            value: text,
+          });
+          await this.noteEmbeddingRepository.upsertEmbedding(
+            note.id,
+            userId,
+            embedding,
+          );
+          this.eventBus.emitLlm({
+            kind: 'embedding',
+            model: EMBEDDING_MODEL,
+            success: true,
+            durationMs: Date.now() - started,
+            noteId: note.id,
+            userId,
+          });
+        } catch (err) {
+          this.logger.error(
+            `Embedding generation failed for note ${note.id}`,
+            err,
+          );
+          this.eventBus.emitLlm({
+            kind: 'embedding',
+            model: EMBEDDING_MODEL,
+            success: false,
+            durationMs: Date.now() - started,
+            noteId: note.id,
+            userId,
+            errorName: err instanceof Error ? err.name : 'UnknownError',
+            errorMessage:
+              err instanceof Error ? err.message : String(err),
+          });
+          throw err;
+        }
       }),
     );
   }

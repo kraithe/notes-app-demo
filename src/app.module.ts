@@ -14,6 +14,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { NotesModule } from './notes/notes.module';
 import { ComputeModule } from './compute/compute.module';
+import { EventsModule } from './common/events/events.module';
 
 const THROTTLER_TTL_SECONDS = 60;
 const THROTTLER_LIMIT = 30;
@@ -64,6 +65,7 @@ const THROTTLER_LIMIT = 30;
     AuthModule,
     NotesModule,
     ComputeModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
