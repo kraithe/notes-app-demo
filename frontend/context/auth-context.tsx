@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useState,
+  useEffect,
   useCallback,
   type ReactNode,
 } from "react";
@@ -30,6 +31,7 @@ type AuthState = {
   token: string | null;
   username: string | null;
   isAuthenticated: boolean;
+  isHydrated: boolean;
   signIn: (token: string) => void;
   signOut: () => void;
 };
@@ -38,6 +40,7 @@ const AuthContext = createContext<AuthState>({
   token: null,
   username: null,
   isAuthenticated: false,
+  isHydrated: false,
   signIn: () => {},
   signOut: () => {},
 });
@@ -55,10 +58,17 @@ function readStoredSession(): { token: string | null; username: string | null } 
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(() => readStoredSession().token);
-  const [username, setUsername] = useState<string | null>(() => readStoredSession().username);
+  // Start with a consistent server/client render, then hydrate from sessionStorage on mount.
+  const [token, setToken] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
 
-  // No useEffect needed — lazy initialisers run once on mount, client-side only.
+  useEffect(() => {
+    const stored = readStoredSession();
+    setToken(stored.token);
+    setUsername(stored.username);
+    setIsHydrated(true);
+  }, []);
 
   const handleSignIn = useCallback((newToken: string) => {
     const payload = decodeJwt(newToken);
@@ -79,6 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         token,
         username,
         isAuthenticated: !!token,
+        isHydrated,
         signIn: handleSignIn,
         signOut: handleSignOut,
       }}

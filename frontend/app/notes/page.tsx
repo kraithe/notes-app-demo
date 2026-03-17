@@ -39,18 +39,15 @@ export default function NotesPage() {
   const [isLoadingCompute, setIsLoadingCompute] = useState(false);
 
   // ── auth guard ───────────────────────────────────────────────────────────
-  // Wait for the AuthProvider to hydrate from sessionStorage before deciding
-  // whether to redirect. isLoadingNotes serves as the "not yet ready" flag
-  // until the initial fetch resolves.
   useEffect(() => {
-    if (!auth.token && !isLoadingNotes) {
+    if (auth.isHydrated && !auth.token) {
       router.replace("/sign-in");
     }
-  }, [auth.token, isLoadingNotes, router]);
+  }, [auth.isHydrated, auth.token, router]);
 
   // ── initial load ─────────────────────────────────────────────────────────
   useEffect(() => {
-    if (!auth.token) return;
+    if (!auth.isHydrated || !auth.token) return;
 
     let cancelled = false;
 
@@ -91,7 +88,7 @@ export default function NotesPage() {
 
   // ── compute panel load ────────────────────────────────────────────────────
   useEffect(() => {
-    if (!auth.token) return;
+    if (!auth.isHydrated || !auth.token) return;
     if (!activeNote) {
       setRelatedNotes([]);
       setSuggestedWebContent([]);
@@ -104,13 +101,26 @@ export default function NotesPage() {
     async function loadCompute() {
       setIsLoadingCompute(true);
       try {
-        const [related, web] = await Promise.all([
-          api.getRelatedNotes(auth.token!, noteId),
-          api.getSuggestedWebContent(auth.token!, noteId),
-        ]);
-        if (cancelled) return;
-        setRelatedNotes(related);
-        setSuggestedWebContent(web);
+        // Compute runs async in the backend (fire-and-forget). Poll a few times
+        // so the UI doesn't look "stuck" right after a save.
+        const MAX_ATTEMPTS = 6;
+        for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+          const [related, web] = await Promise.all([
+            api.getRelatedNotes(auth.token!, noteId),
+            api.getSuggestedWebContent(auth.token!, noteId),
+          ]);
+          if (cancelled) return;
+          setRelatedNotes(related);
+          setSuggestedWebContent(web);
+
+          // If we have *anything*, stop early.
+          if (related.length > 0 || web.length > 0) break;
+
+          // Backoff: 250ms, 500ms, 1s, 1s, 1s...
+          const delayMs = attempt === 1 ? 250 : attempt === 2 ? 500 : 1000;
+          await new Promise((r) => setTimeout(r, delayMs));
+          if (cancelled) return;
+        }
       } catch (err) {
         if (cancelled) return;
         if (err instanceof api.ApiError && err.status === 401) {
@@ -221,11 +231,6 @@ export default function NotesPage() {
     }
   }, [auth, router]);
 
-  // ── render ────────────────────────────────────────────────────────────────
-  // While the auth context is hydrating from sessionStorage, render nothing
-  // to avoid a flash of the wrong state.
-  if (!auth.token && isLoadingNotes) return null;
-
   return (
     <div className="flex flex-col h-screen bg-zinc-950 text-zinc-100 overflow-hidden">
       {/* ── Top bar ── */}
@@ -313,9 +318,17 @@ export default function NotesPage() {
           className="flex-1 min-w-0 flex gap-8 p-8 overflow-y-auto"
           aria-label="Note editor"
         >
-          {isLoadingNotes ? (
+          {!auth.isHydrated ? (
             <p className="text-sm text-zinc-500" role="status">
               Loading…
+            </p>
+          ) : isLoadingNotes ? (
+            <p className="text-sm text-zinc-500" role="status">
+              Loading…
+            </p>
+          ) : !auth.token ? (
+            <p className="text-sm text-zinc-500" role="status">
+              Redirecting…
             </p>
           ) : (
             <>
