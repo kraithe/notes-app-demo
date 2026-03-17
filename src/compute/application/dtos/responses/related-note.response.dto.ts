@@ -7,4 +7,3 @@ export class RelatedNoteResponseDto {
   @ApiProperty()
   title!: string;
 }
-

@@ -7,4 +7,3 @@ export class SuggestedWebContentResponseDto {
   @ApiProperty()
   title!: string;
 }
-
