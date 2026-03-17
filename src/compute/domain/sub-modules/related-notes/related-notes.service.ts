@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { embed } from 'ai';
-import { openai } from '@ai-sdk/openai';
+import { anthropic } from '@ai-sdk/anthropic';
 import { NoteEmbeddingRepository } from '../../../infrastructure/repositories/note-embedding.repository';
 import { RelatedNotesRecordRepository } from '../../../infrastructure/repositories/related-notes-record.repository';
 import { NoteRepository } from '../../../../notes/infrastructure/repositories/note.repository';
@@ -11,7 +11,7 @@ import { DomainEventBus } from '../../../../common/events/domain-event-bus.servi
 
 // UserId is used in method signatures but not in the buildNoteTitleMap helper
 
-const EMBEDDING_MODEL = 'text-embedding-3-small';
+const EMBEDDING_MODEL = 'claude-3-haiku-20240307-embedding';
 
 @Injectable()
 export class RelatedNotesService {
@@ -62,9 +62,9 @@ export class RelatedNotesService {
     notes: Array<{ id: NoteId; title: string; content: string }>,
     userId: UserId,
   ): Promise<void> {
-    const apiKey = this.configService.get<string>('OPENAI_API_KEY');
+    const apiKey = this.configService.get<string>('ANTHROPIC_API_KEY');
     if (!apiKey) {
-      this.logger.warn('OPENAI_API_KEY is not set; skipping embeddings.');
+      this.logger.warn('ANTHROPIC_API_KEY is not set; skipping embeddings.');
       return;
     }
 
@@ -80,7 +80,7 @@ export class RelatedNotesService {
         const started = Date.now();
         try {
           const { embedding } = await embed({
-            model: openai.embedding(EMBEDDING_MODEL),
+            model: `${EMBEDDING_MODEL}`,
             value: text,
           });
           await this.noteEmbeddingRepository.upsertEmbedding(

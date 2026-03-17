@@ -1,13 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { generateObject } from 'ai';
-import { openai } from '@ai-sdk/openai';
+import { anthropic } from '@ai-sdk/anthropic';
 import { z } from 'zod';
 import { SuggestedWebContentRecordRepository } from '../../../infrastructure/repositories/suggested-web-content-record.repository';
 import type { NoteId } from '../../../../notes/domain/entities/note.entity';
 import { DomainEventBus } from '../../../../common/events/domain-event-bus.service';
 
-const CHAT_MODEL = 'gpt-4o-mini';
+const CHAT_MODEL = 'claude-3-haiku-20240307';
 const MAX_SUGGESTIONS = 3;
 
 const WebContentSuggestionSchema = z.object({
@@ -69,18 +69,18 @@ export class SuggestedWebContentService {
     title: string,
     content: string,
   ): Promise<WebContentSuggestion[]> {
-    const apiKey = this.configService.get<string>('OPENAI_API_KEY');
+    const apiKey = this.configService.get<string>('ANTHROPIC_API_KEY');
     if (!apiKey) {
       this.logger.warn(
-        'OPENAI_API_KEY is not set; skipping web content suggestions.',
+        'ANTHROPIC_API_KEY is not set; skipping web content suggestions.',
       );
       this.eventBus.emitLlm({
         kind: 'web-content',
         model: CHAT_MODEL,
         success: false,
         durationMs: 0,
-        errorName: 'MissingOpenAiApiKey',
-        errorMessage: 'OPENAI_API_KEY is not set.',
+        errorName: 'MissingAnthropicApiKey',
+        errorMessage: 'ANTHROPIC_API_KEY is not set.',
       });
       return [];
     }
@@ -89,7 +89,7 @@ export class SuggestedWebContentService {
     const started = Date.now();
     try {
       const { object } = await generateObject({
-        model: openai(CHAT_MODEL),
+        model: anthropic(CHAT_MODEL),
         schema: WebContentSuggestionSchema,
         prompt: `You are a research assistant. Based on the following note, suggest up to ${MAX_SUGGESTIONS} relevant web resources a reader might find useful. Include a mix of types such as articles, blog posts, YouTube videos, or documentation pages. Do not suggest websites known primarily for explicit content. Return only real, publicly accessible URLs with accurate titles.
 

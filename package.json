@@ -20,7 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^3.0.41",
+    "@ai-sdk/anthropic": "^3.0.58",
     "@mastra/core": "^1.13.2",
     "@mastra/pg": "^1.8.0",
     "@mastra/rag": "^2.1.2",
