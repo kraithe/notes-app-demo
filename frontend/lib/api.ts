@@ -1,4 +1,9 @@
-import type { GetAllNotesResponse, Note } from "./types";
+import type {
+  GetAllNotesResponse,
+  Note,
+  RelatedNote,
+  SuggestedWebContent,
+} from "./types";
 
 const BASE = "http://localhost:3000";
 
@@ -95,6 +100,26 @@ export async function updateNote(
 export async function deleteNote(token: string, id: number): Promise<void> {
   const res = await fetch(`${BASE}/notes/${id}`, {
     method: "DELETE",
+    headers: authHeaders(token),
+  });
+  return handleResponse(res);
+}
+
+export async function getRelatedNotes(
+  token: string,
+  noteId: number
+): Promise<RelatedNote[]> {
+  const res = await fetch(`${BASE}/compute/notes/${noteId}/related-notes`, {
+    headers: authHeaders(token),
+  });
+  return handleResponse(res);
+}
+
+export async function getSuggestedWebContent(
+  token: string,
+  noteId: number
+): Promise<SuggestedWebContent[]> {
+  const res = await fetch(`${BASE}/compute/notes/${noteId}/suggested-web-content`, {
     headers: authHeaders(token),
   });
   return handleResponse(res);

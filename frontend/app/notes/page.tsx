@@ -7,7 +7,12 @@ import { NoteNavItem } from "@/components/notes/note-nav-item";
 import { EditNote } from "@/components/notes/edit-note";
 import { Button } from "@/components/ui/button";
 import * as api from "@/lib/api";
-import type { Note, NoteSummary } from "@/lib/types";
+import type {
+  Note,
+  NoteSummary,
+  RelatedNote,
+  SuggestedWebContent,
+} from "@/lib/types";
 
 /** Sentinel value used to represent "new note" mode */
 const NEW_NOTE_ID = -1 as const;
@@ -20,6 +25,10 @@ export default function NotesPage() {
   const [summaries, setSummaries] = useState<NoteSummary[]>([]);
   const [activeNote, setActiveNote] = useState<Note | null>(null);
   const [selectedId, setSelectedId] = useState<number>(NEW_NOTE_ID);
+  const [relatedNotes, setRelatedNotes] = useState<RelatedNote[]>([]);
+  const [suggestedWebContent, setSuggestedWebContent] = useState<
+    SuggestedWebContent[]
+  >([]);
 
   // ── ui state ─────────────────────────────────────────────────────────────
   const [isLoadingNotes, setIsLoadingNotes] = useState(true);
@@ -27,6 +36,7 @@ export default function NotesPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [isLoadingCompute, setIsLoadingCompute] = useState(false);
 
   // ── auth guard ───────────────────────────────────────────────────────────
   // Wait for the AuthProvider to hydrate from sessionStorage before deciding
@@ -78,6 +88,49 @@ export default function NotesPage() {
   // auth.token is stable once set; we only want this to run once on mount
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth.token]);
+
+  // ── compute panel load ────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!auth.token) return;
+    if (!activeNote) {
+      setRelatedNotes([]);
+      setSuggestedWebContent([]);
+      return;
+    }
+
+    let cancelled = false;
+    const noteId = activeNote.id;
+
+    async function loadCompute() {
+      setIsLoadingCompute(true);
+      try {
+        const [related, web] = await Promise.all([
+          api.getRelatedNotes(auth.token!, noteId),
+          api.getSuggestedWebContent(auth.token!, noteId),
+        ]);
+        if (cancelled) return;
+        setRelatedNotes(related);
+        setSuggestedWebContent(web);
+      } catch (err) {
+        if (cancelled) return;
+        if (err instanceof api.ApiError && err.status === 401) {
+          auth.signOut();
+          router.replace("/sign-in");
+          return;
+        }
+        // Best-effort: don't block note editing if compute fails
+        setRelatedNotes([]);
+        setSuggestedWebContent([]);
+      } finally {
+        if (!cancelled) setIsLoadingCompute(false);
+      }
+    }
+
+    void loadCompute();
+    return () => {
+      cancelled = true;
+    };
+  }, [auth.token, activeNote?.id, auth, router]);
 
   // ── select existing note ─────────────────────────────────────────────────
   const handleSelectNote = useCallback(
@@ -257,7 +310,7 @@ export default function NotesPage() {
 
         {/* ── Right note pane ── */}
         <main
-          className="flex-1 min-w-0 flex flex-col p-8 overflow-y-auto"
+          className="flex-1 min-w-0 flex gap-8 p-8 overflow-y-auto"
           aria-label="Note editor"
         >
           {isLoadingNotes ? (
@@ -265,13 +318,94 @@ export default function NotesPage() {
               Loading…
             </p>
           ) : (
-            <EditNote
-              note={activeNote}
-              isSaving={isSaving}
-              isDeleting={isDeleting}
-              onSave={handleSave}
-              onDelete={handleDelete}
-            />
+            <>
+              <div className="flex-1 min-w-0">
+                <EditNote
+                  note={activeNote}
+                  isSaving={isSaving}
+                  isDeleting={isDeleting}
+                  onSave={handleSave}
+                  onDelete={handleDelete}
+                />
+              </div>
+
+              <aside
+                aria-label="Compute insights"
+                className="w-80 flex-shrink-0"
+              >
+                <div className="sticky top-8 space-y-6">
+                  <section className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
+                    <h2 className="text-sm font-semibold text-white">
+                      Related notes
+                    </h2>
+                    <div className="mt-3">
+                      {!activeNote ? (
+                        <p className="text-sm text-zinc-500">
+                          Save a note to see related notes.
+                        </p>
+                      ) : isLoadingCompute ? (
+                        <p className="text-sm text-zinc-500">Computing…</p>
+                      ) : relatedNotes.length === 0 ? (
+                        <p className="text-sm text-zinc-500">
+                          No related notes yet.
+                        </p>
+                      ) : (
+                        <ul className="space-y-2">
+                          {relatedNotes.map((n) => (
+                            <li key={n.id}>
+                              <button
+                                type="button"
+                                className="text-left text-sm text-zinc-200 hover:text-white underline-offset-4 hover:underline"
+                                onClick={() => handleSelectNote(n.id)}
+                              >
+                                {n.title || `Note ${n.id}`}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </section>
+
+                  <section className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
+                    <h2 className="text-sm font-semibold text-white">
+                      Suggested web content
+                    </h2>
+                    <div className="mt-3">
+                      {!activeNote ? (
+                        <p className="text-sm text-zinc-500">
+                          Save a note to see suggestions.
+                        </p>
+                      ) : isLoadingCompute ? (
+                        <p className="text-sm text-zinc-500">Computing…</p>
+                      ) : suggestedWebContent.length === 0 ? (
+                        <p className="text-sm text-zinc-500">
+                          No suggestions yet.
+                        </p>
+                      ) : (
+                        <ul className="space-y-2">
+                          {suggestedWebContent.map((s) => (
+                            <li key={s.url}>
+                              <a
+                                href={s.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-sm text-zinc-200 hover:text-white underline-offset-4 hover:underline"
+                              >
+                                {s.title}
+                              </a>
+                              <div className="text-xs text-zinc-500 break-all">
+                                {s.url}
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </section>
+                </div>
+              </aside>
+            </>
           )}
         </main>
       </div>

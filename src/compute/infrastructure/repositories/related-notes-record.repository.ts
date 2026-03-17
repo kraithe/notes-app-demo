@@ -36,4 +36,13 @@ export class RelatedNotesRecordRepository {
     );
     await this.repo.save(records);
   }
+
+  async findByPrimaryNoteId(
+    primaryNoteId: NoteId,
+  ): Promise<RelatedNotesRecord[]> {
+    return this.repo.find({
+      where: { primaryNoteId },
+      order: { id: 'ASC' },
+    });
+  }
 }

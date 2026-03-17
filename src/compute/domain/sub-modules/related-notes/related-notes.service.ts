@@ -55,6 +55,12 @@ export class RelatedNotesService {
     notes: Array<{ id: NoteId; title: string; content: string }>,
     userId: UserId,
   ): Promise<void> {
+    const apiKey = this.configService.get<string>('OPENAI_API_KEY');
+    if (!apiKey) {
+      this.logger.warn('OPENAI_API_KEY is not set; skipping embeddings.');
+      return;
+    }
+
     await Promise.all(
       notes.map(async (note) => {
         const text = `${note.title}\n\n${note.content}`;

@@ -14,6 +14,16 @@ export type Note = {
   lastModifiedDate: string;
 };
 
+export type RelatedNote = {
+  id: number;
+  title: string;
+};
+
+export type SuggestedWebContent = {
+  url: string;
+  title: string;
+};
+
 export type GetAllNotesResponse = {
   notes: NoteSummary[];
   mostRecentNote: Note | null;

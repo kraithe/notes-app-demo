@@ -46,4 +46,13 @@ export class SuggestedWebContentRecordRepository {
       return true;
     });
   }
+
+  async findByPrimaryNoteId(
+    primaryNoteId: NoteId,
+  ): Promise<SuggestedWebContentRecord[]> {
+    return this.repo.find({
+      where: { primaryNoteId },
+      order: { id: 'ASC' },
+    });
+  }
 }

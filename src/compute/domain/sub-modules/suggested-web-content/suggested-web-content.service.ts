@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { generateObject } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
@@ -29,6 +30,7 @@ export class SuggestedWebContentService {
   private readonly logger = new Logger(SuggestedWebContentService.name);
 
   constructor(
+    private readonly configService: ConfigService,
     private readonly suggestedWebContentRecordRepository: SuggestedWebContentRecordRepository,
     private readonly eventBus: DomainEventBus,
   ) {}
@@ -58,6 +60,22 @@ export class SuggestedWebContentService {
     title: string,
     content: string,
   ): Promise<WebContentSuggestion[]> {
+    const apiKey = this.configService.get<string>('OPENAI_API_KEY');
+    if (!apiKey) {
+      this.logger.warn(
+        'OPENAI_API_KEY is not set; skipping web content suggestions.',
+      );
+      this.eventBus.emitLlm({
+        kind: 'web-content',
+        model: CHAT_MODEL,
+        success: false,
+        durationMs: 0,
+        errorName: 'MissingOpenAiApiKey',
+        errorMessage: 'OPENAI_API_KEY is not set.',
+      });
+      return [];
+    }
+
     const notePreview = content.slice(0, 500);
     const started = Date.now();
     try {
