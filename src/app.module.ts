@@ -15,6 +15,7 @@ import { AuthModule } from './auth/auth.module';
 import { NotesModule } from './notes/notes.module';
 import { ComputeModule } from './compute/compute.module';
 import { EventsModule } from './common/events/events.module';
+import { ApiLoggingInterceptor } from './common/interceptors/api-logging.interceptor';
 
 const THROTTLER_TTL_SECONDS = 60;
 const THROTTLER_LIMIT = 30;
@@ -68,6 +69,6 @@ const THROTTLER_LIMIT = 30;
     EventsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, ApiLoggingInterceptor],
 })
 export class AppModule {}
