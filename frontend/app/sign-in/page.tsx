@@ -2,6 +2,7 @@
 
 import { useState, useId, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/ui/auth-card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,48 +10,40 @@ import { Button } from "@/components/ui/button";
 import { FieldError } from "@/components/ui/field-error";
 import { MaskedPasswordInput } from "@/components/ui/masked-password-input";
 import { useMaskedPassword } from "@/hooks/use-masked-password";
+import { useAuth } from "@/context/auth-context";
+import * as api from "@/lib/api";
 
 export default function SignInPage() {
   const baseId = useId();
+  const router = useRouter();
+  const auth = useAuth();
 
   const [username, setUsername] = useState("");
   const password = useMaskedPassword();
 
-  // Server-returned invalid-credentials message
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = useCallback(async () => {
     if (!username || !password.value) return;
 
-    // Clear the previous server error on each new attempt
     setServerError(null);
     setIsSubmitting(true);
 
     try {
-      const res = await fetch("http://localhost:3000/auth/sign-in", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password: password.value }),
-      });
-
-      if (res.ok) {
-        const body = await res.json();
-        // TODO: store token (e.g. in httpOnly cookie / context) and redirect
-        console.log("Signed in. Access token:", body.accessToken);
-        return;
-      }
-
-      const body = await res.json().catch(() => ({}));
+      const { accessToken } = await api.signIn(username, password.value);
+      auth.signIn(accessToken);
+      router.push("/notes");
+    } catch (err) {
       setServerError(
-        body?.message ?? "Username or password is incorrect."
+        err instanceof api.ApiError
+          ? err.message
+          : "Unable to reach the server. Please try again."
       );
-    } catch {
-      setServerError("Unable to reach the server. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
-  }, [username, password.value]);
+  }, [username, password.value, auth, router]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -67,9 +60,7 @@ export default function SignInPage() {
         <h1 className="text-2xl font-bold text-white tracking-tight">
           Welcome back
         </h1>
-        <p className="mt-1 text-sm text-zinc-400">
-          Sign in to your account.
-        </p>
+        <p className="mt-1 text-sm text-zinc-400">Sign in to your account.</p>
       </header>
 
       <form
@@ -81,7 +72,6 @@ export default function SignInPage() {
         }}
         className="space-y-5"
       >
-        {/* Username */}
         <div className="space-y-1">
           <Label htmlFor={`${baseId}-username`}>Username</Label>
           <Input
@@ -99,7 +89,6 @@ export default function SignInPage() {
           />
         </div>
 
-        {/* Password */}
         <div className="space-y-1">
           <Label htmlFor={`${baseId}-password`}>Password</Label>
           <MaskedPasswordInput
@@ -118,10 +107,7 @@ export default function SignInPage() {
             }}
             onKeyDown={handleKeyDown}
           />
-          <FieldError
-            id={`${baseId}-password-error`}
-            message={serverError}
-          />
+          <FieldError id={`${baseId}-password-error`} message={serverError} />
         </div>
 
         <Button
